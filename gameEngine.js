@@ -5,7 +5,7 @@ let xBaseA = 10;
 let yBaseA = 10;
 let baseAWidth = 50;
 
-let xBaseB = 575;
+let xBaseB = 580;
 let yBaseB = 420;
 let baseBWidth = 50;
 
@@ -13,15 +13,17 @@ let xMountain = 150;
 let yMountain = 100;
 let mountainWidth = 100;
 let mountainHeight = 50;
-let z;
+
+let tankWidth = 20;
 
 let gameWindow = function(game){
-    let b1, b2, m1, m2, m3, m4;
+    let b1, b2, m1, m2, m3, m4, t11, t21;
     game.preload = function(){};
 
     game.setup = function(){
         canvas = game.createCanvas(canvasWidth, canvasHeight);
         canvas.class("box-shadow");
+        // game.frameRate(15);
         game.strokeWeight(2);
         game.stroke(84, 56, 71);
 
@@ -34,6 +36,10 @@ let gameWindow = function(game){
         m2 = new Mountain(game, xMountain+300, yMountain, mountainWidth/2, mountainHeight*2);
         m3 = new Mountain(game, xMountain, yMountain+200, mountainWidth, mountainHeight);
         m4 = new Mountain(game, xMountain+250, yMountain+180, mountainWidth, mountainHeight);
+
+        // Tanks
+        t11 = new Tank(game, xBaseA+55, yBaseA, tankWidth, tankWidth);
+        t21 = new Tank(game, xBaseB-25, yBaseB+tankWidth, tankWidth, tankWidth);
     };
 
     game.draw = function(){
@@ -47,11 +53,14 @@ let gameWindow = function(game){
         m2.display();
         m3.display();
         m4.display();
+
+        t11.display();
+        t11.x += 1;
+        if(t11.x >= canvasWidth-tankWidth){t11.x = xBaseA+55;}
         
-        game.rectMode(game.CENTER);
-        game.translate(game.width / 2, game.height / 2);
-        game.translate(p5.Vector.fromAngle(game.millis() / 1000, 180));
-        game.rect(0, 0, 20, 20);
+        t21.display();
+        t21.x -= 1;
+        if(t21.x <= 0){t21.x = xBaseB-25;}
     };
 };
 let cnv = new p5(gameWindow, 'gameWindow');
