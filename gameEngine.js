@@ -39,8 +39,8 @@ let gameWindow = function(game){
         m4 = new Mountain(game, xMountain+250, yMountain+180, mountainWidth, mountainHeight);
 
         // Tanks
-        t11 = new Tank(game, xBaseA+55, yBaseA, tankWidth, tankWidth);
-        t21 = new Tank(game, xBaseB-25, yBaseB+tankWidth, tankWidth, tankWidth);
+        t11 = new Tank(game, xBaseA+55, yBaseA, tankWidth, 45);
+        t21 = new Tank(game, xBaseB-25, yBaseB+tankWidth, tankWidth, 270);
     };
 
     game.draw = function(){
