@@ -55,7 +55,7 @@ let gameWindow = function(game){
         m3.display();
         m4.display();
 
-        t11.display(90);
+        t11.display(viewAngle=90);
         t11.x += 1;
         if(t11.x >= canvasWidth-tankWidth){t11.x = xBaseA+55;}
         
