@@ -5,6 +5,10 @@ class Tank{
         this.width = width;
         this.viewAngle = viewAngle;
         this.canvas = canvas;
+        this.bullets = [];
+        for (let i = 0; i < 150; i++){
+            this.bullets.push(new Bullet(canvas));
+        }
     }
 
     display(){
