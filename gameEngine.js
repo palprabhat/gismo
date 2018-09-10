@@ -26,6 +26,7 @@ let gameWindow = function(game){
         // game.frameRate(15);
         game.strokeWeight(2);
         game.stroke(84, 56, 71);
+        game.angleMode(game.DEGREES);
 
         // BlockHouses
         b1 = new Base(game, xBaseA, yBaseA, baseAWidth, baseAWidth);
