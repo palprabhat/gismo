@@ -26,6 +26,7 @@ let gameWindow = function(game){
         // game.frameRate(15);
         game.strokeWeight(2);
         game.stroke(84, 56, 71);
+        game.angleMode(game.DEGREES);
 
         // BlockHouses
         b1 = new Base(game, xBaseA, yBaseA, baseAWidth, baseAWidth);
@@ -38,8 +39,8 @@ let gameWindow = function(game){
         m4 = new Mountain(game, xMountain+250, yMountain+180, mountainWidth, mountainHeight);
 
         // Tanks
-        t11 = new Tank(game, xBaseA+55, yBaseA, tankWidth, tankWidth);
-        t21 = new Tank(game, xBaseB-25, yBaseB+tankWidth, tankWidth, tankWidth);
+        t11 = new Tank(game, xBaseA+55, yBaseA, tankWidth);
+        t21 = new Tank(game, xBaseB-25, yBaseB+tankWidth, tankWidth);
     };
 
     game.draw = function(){
@@ -54,13 +55,17 @@ let gameWindow = function(game){
         m3.display();
         m4.display();
 
-        t11.display();
+        t11.display(viewAngle=90);
         t11.x += 1;
         if(t11.x >= canvasWidth-tankWidth){t11.x = xBaseA+55;}
         
-        t21.display();
-        t21.x -= 1;
-        if(t21.x <= 0){t21.x = xBaseB-25;}
+        // t21.display(game.random(360));
+        // t21.x -= 1;
+        // if(t21.x <= 0){t21.x = xBaseB-25;}
     };
+
+    game.mousePressed = function(){
+        t11.fire();
+    }
 };
 let cnv = new p5(gameWindow, 'gameWindow');
