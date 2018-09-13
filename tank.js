@@ -19,7 +19,19 @@ class Tank{
     }
 
     collide(obstacle) {
-
+        let hit = false;
+        switch(obstacle.constructor.name){
+            case 'Base':
+            case 'Tank':
+            case 'Mountain':
+                hit = this.canvas.collideRectRect(this.x, this.y, this.width, this.width,
+                                            obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                break;
+            
+            default:
+                console.log('Tank class collision malfunction!..');
+        }
+        return hit;
     }
 
     rotateTurret(viewAngle){
