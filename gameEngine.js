@@ -45,8 +45,9 @@ let gameWindow = function(game){
 
     game.draw = function(){
         game.background(242, 230, 193);
-        game.fill(51);
+        game.fill(249, 67, 54);
         b1.display();
+        game.fill(66, 80, 244);
         b2.display();
         
         game.fill(183, 154, 97);
@@ -55,10 +56,35 @@ let gameWindow = function(game){
         m3.display();
         m4.display();
 
-        t11.display(viewAngle=90);
-        t11.x += 1;
+        game.fill(0);
+        t11.display(viewAngle=0);
+        // t11.x += 1;
         if(t11.x >= canvasWidth-tankWidth){t11.x = xBaseA+55;}
-        
+        let hit = t11.collide(m1);
+        if (hit==true){
+            console.log(hit);
+        }
+        // test code to move the tank around
+        if (game.keyIsDown(game.LEFT_ARROW)){
+            t11.x -= 1;
+            t11.rotateTurret(180);
+            console.log('LEFT');
+        }
+        if (game.keyIsDown(game.RIGHT_ARROW)){
+            t11.x += 1;
+            t11.rotateTurret(0);
+            console.log('RIGHT');
+        }
+        if (game.keyIsDown(game.UP_ARROW)){
+            t11.y -= 1;
+            t11.rotateTurret(270);
+            console.log('UP');
+        }
+        if (game.keyIsDown(game.DOWN_ARROW)){
+            t11.y += 1;
+            t11.rotateTurret(90);
+            console.log('DOWN');
+        }
         // t21.display(game.random(360));
         // t21.x -= 1;
         // if(t21.x <= 0){t21.x = xBaseB-25;}
