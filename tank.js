@@ -4,18 +4,56 @@ class Tank{
         this.y = y;
         this.width = width;
         this.canvas = canvas;
+        this.viewAngle = 0;
+        this.movementNetwork = new NeuralNetwork(2, 6, 2, 4, 0.1);
+        this.turretNetwork = new NeuralNetwork(2, 6, 2, 1, 0.1);
         this.bullets = [];
         for (let i = 0; i < 150; i++){
             this.bullets.push(new Bullet(canvas));
         }
     }
 
-    display(viewAngle=0){
+    display(){
         this.canvas.push();
         this.canvas.translate(this.x, this.y);
-        this.__rotateTurret(viewAngle);
+        this.__rotateTurret(this.viewAngle);
         this.canvas.rect(0, 0, this.width, this.width);
         this.canvas.pop();
+    }
+
+    train(){
+        this.movementNetwork.train([Math.random(), Math.random()], [Math.random(), Math.random(), Math.random(), Math.random()]);
+        this.turretNetwork.train([Math.random(), Math.random()], [Math.random()]);
+    }
+
+    move(){
+        let move  = this.movementNetwork.argMax(this.movementNetwork.predict([this.x, this.y]));
+
+        switch (move) {
+            case 0:
+                this.x -= 1;
+                break;
+            case 1:
+                this.x += 1;
+                break;
+            case 2:
+                this.y -= 1;
+                break;
+            case 3:
+                this.y += 1;
+                break;
+        }
+    }
+
+    moveTurret(){
+        let turretMovement = this.turretNetwork.predict([this.x, this.y])
+
+        if (turretMovement > 0.5){
+            this.viewAngle -= 45;
+        }
+        else{
+            this.viewAngle += 45;
+        }
     }
 
     collide(obstacle) {

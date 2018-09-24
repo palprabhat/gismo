@@ -20,7 +20,6 @@ let nn1, nn2;
 
 let gameWindow = function(game){
     let b1, b2, m1, m2, m3, m4, t11, t21;
-    let angle = 0;
     let t = 0;
     game.preload = function(){
         nn1 = new NeuralNetwork(2, 6, 2, 4, 0.1);
@@ -72,38 +71,21 @@ let gameWindow = function(game){
             console.log("hit");
         }
 
-        nn1.train([Math.random(), Math.random()], [Math.random(), Math.random(), Math.random(), Math.random()])
-        nn2.train([Math.random(), Math.random()], [Math.random()])
-        let move  = nn1.argMax(nn1.predict([t11.x, t11.y]));
+        t11.train();
+        t21.train();
 
-        switch (move) {
-            case 0:
-                t11.x -= 1;
-                break;
-            case 1:
-                t11.x += 1;
-                break;
-            case 2:
-                t11.y -= 1;
-                break;
-            case 3:
-                t11.y += 1;
-                break;
-        }
-
-
-
+        t11.move();
+        t21.move();
+       
+        //turret movement
         if (t % 60 == 0){
-            let turretMovement = nn2.predict([t11.x, t11.y])
-
-            if (turretMovement > 0.5){
-                angle -= 45;
-            }
-            else{
-                angle += 45;
-            }
+            t11.moveTurret();
+            t21.moveTurret();
             t=0;
         }
+
+        t11.display();  
+        t21.display();
 
         // if(game.keyIsDown(game.LEFT_ARROW)){
         //     t11.x -= 1;
@@ -118,8 +100,6 @@ let gameWindow = function(game){
         //     t11.y += 1;
         // }
 
-        t11.display(viewAngle=angle);
- 
         // t21.display(game.random(360));
         // t21.x -= 1;
         // if(t21.x <= 0){t21.x = xBaseB-25;}
