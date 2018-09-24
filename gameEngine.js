@@ -18,6 +18,7 @@ let tankWidth = 20;
 
 let gameWindow = function(game){
     let b1, b2, m1, m2, m3, m4, t11, t21;
+    angle = 0;
     game.preload = function(){};
 
     game.setup = function(){
@@ -49,7 +50,7 @@ let gameWindow = function(game){
         b1.display();
         game.fill(66, 80, 244);
         b2.display();
-        
+       
         game.fill(183, 154, 97);
         m1.display();
         m2.display();
@@ -57,34 +58,28 @@ let gameWindow = function(game){
         m4.display();
 
         game.fill(0);
-        t11.display(viewAngle=0);
-        // t11.x += 1;
+        
         if(t11.x >= canvasWidth-tankWidth){t11.x = xBaseA+55;}
         let hit = t11.collide(m1);
         if (hit==true){
-            console.log(hit);
+            console.log("hit");
         }
-        // test code to move the tank around
-        if (game.keyIsDown(game.LEFT_ARROW)){
+
+        if(game.keyIsDown(game.LEFT_ARROW)){
             t11.x -= 1;
-            t11.rotateTurret(180);
-            console.log('LEFT');
-        }
+        } else
         if (game.keyIsDown(game.RIGHT_ARROW)){
             t11.x += 1;
-            t11.rotateTurret(0);
-            console.log('RIGHT');
-        }
+        } else
         if (game.keyIsDown(game.UP_ARROW)){
             t11.y -= 1;
-            t11.rotateTurret(270);
-            console.log('UP');
-        }
+        } else
         if (game.keyIsDown(game.DOWN_ARROW)){
             t11.y += 1;
-            t11.rotateTurret(90);
-            console.log('DOWN');
         }
+
+        t11.display(viewAngle=angle);
+ 
         // t21.display(game.random(360));
         // t21.x -= 1;
         // if(t21.x <= 0){t21.x = xBaseB-25;}
@@ -92,6 +87,15 @@ let gameWindow = function(game){
 
     game.mousePressed = function(){
         t11.fire();
+    }
+
+    game.keyPressed = function(){
+        if (game.keyCode == 65){
+            angle -= 45;
+        } else
+        if (game.keyCode == 68){
+            angle += 45;
+        }
     }
 };
 let cnv = new p5(gameWindow, 'gameWindow');

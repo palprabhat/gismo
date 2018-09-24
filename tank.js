@@ -13,7 +13,7 @@ class Tank{
     display(viewAngle=0){
         this.canvas.push();
         this.canvas.translate(this.x, this.y);
-        this.rotateTurret(viewAngle);
+        this.__rotateTurret(viewAngle);
         this.canvas.rect(0, 0, this.width, this.width);
         this.canvas.pop();
     }
@@ -34,7 +34,7 @@ class Tank{
         return hit;
     }
 
-    rotateTurret(viewAngle){
+    __rotateTurret(viewAngle){
         this.canvas.push();
         this.canvas.translate(this.width/2, this.width/2);
         this.canvas.rotate(viewAngle - 45);
