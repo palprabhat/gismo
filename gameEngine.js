@@ -16,10 +16,16 @@ let mountainHeight = 50;
 
 let tankWidth = 20;
 
+let nn1, nn2;
+
 let gameWindow = function(game){
     let b1, b2, m1, m2, m3, m4, t11, t21;
-    angle = 0;
-    game.preload = function(){};
+    let angle = 0;
+    let t = 0;
+    game.preload = function(){
+        nn = new NeuralNetwork(2, 6, 2, 4, 0.1);
+        nn2 = new NeuralNetwork(2, 6, 2, 1, 0.1);
+    };
 
     game.setup = function(){
         canvas = game.createCanvas(canvasWidth, canvasHeight);
@@ -45,6 +51,7 @@ let gameWindow = function(game){
     };
 
     game.draw = function(){
+        t += 1;
         game.background(242, 230, 193);
         game.fill(249, 67, 54);
         b1.display();
@@ -65,18 +72,51 @@ let gameWindow = function(game){
             console.log("hit");
         }
 
-        if(game.keyIsDown(game.LEFT_ARROW)){
-            t11.x -= 1;
-        } else
-        if (game.keyIsDown(game.RIGHT_ARROW)){
-            t11.x += 1;
-        } else
-        if (game.keyIsDown(game.UP_ARROW)){
-            t11.y -= 1;
-        } else
-        if (game.keyIsDown(game.DOWN_ARROW)){
-            t11.y += 1;
+        nn1.train([Math.random(), Math.random()], [Math.random(), Math.random(), Math.random(), Math.random()])
+        nn2.train([Math.random(), Math.random()], [Math.random()])
+        let move  = nn1.argMax(nn1.predict([t11.x, t11.y]));
+
+        switch (move) {
+            case 0:
+                t11.x -= 1;
+                break;
+            case 1:
+                t11.x += 1;
+                break;
+            case 2:
+                t11.y -= 1;
+                break;
+            case 3:
+                t11.y += 1;
+                break;
         }
+
+
+
+        if (t % 60 == 0){
+            let turretMovement = nn2.predict([t11.x, t11.y])
+
+            if (turretMovement > 0.5){
+                angle -= 45;
+            }
+            else{
+                angle += 45;
+            }
+            t=0;
+        }
+
+        // if(game.keyIsDown(game.LEFT_ARROW)){
+        //     t11.x -= 1;
+        // } else
+        // if (game.keyIsDown(game.RIGHT_ARROW)){
+        //     t11.x += 1;
+        // } else
+        // if (game.keyIsDown(game.UP_ARROW)){
+        //     t11.y -= 1;
+        // } else
+        // if (game.keyIsDown(game.DOWN_ARROW)){
+        //     t11.y += 1;
+        // }
 
         t11.display(viewAngle=angle);
  
@@ -89,13 +129,13 @@ let gameWindow = function(game){
         t11.fire();
     }
 
-    game.keyPressed = function(){
-        if (game.keyCode == 65){
-            angle -= 45;
-        } else
-        if (game.keyCode == 68){
-            angle += 45;
-        }
-    }
+    // game.keyPressed = function(){
+        // if (game.keyCode == 65){
+        //     angle -= 45;
+        // } else
+        // if (game.keyCode == 68){
+        //     angle += 45;
+        // }
+    // }
 };
 let cnv = new p5(gameWindow, 'gameWindow');
