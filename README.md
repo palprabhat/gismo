@@ -2,7 +2,6 @@
 
 ### TODO
 #### Sahil
-* Check boundry collision
 * Turret view filed
 * update other collision function
 

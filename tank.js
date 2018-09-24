@@ -31,16 +31,24 @@ class Tank{
 
         switch (move) {
             case 0:
-                this.x -= 1;
+                if(this.x < 1){
+                    this.x -= 1;
+                }
                 break;
             case 1:
-                this.x += 1;
+                if(this.x + this.width < this.canvas.width){
+                    this.x += 1;
+                }
                 break;
             case 2:
-                this.y -= 1;
+                if(this.y < 1){
+                    this.y -= 1;
+                }
                 break;
             case 3:
-                this.y += 1;
+                if(this.y + this.width < this.canvas.height){
+                    this.y += 1;
+                }
                 break;
         }
     }

@@ -16,14 +16,10 @@ let mountainHeight = 50;
 
 let tankWidth = 20;
 
-let nn1, nn2;
-
 let gameWindow = function(game){
     let b1, b2, m1, m2, m3, m4, t11, t21;
     let t = 0;
     game.preload = function(){
-        nn1 = new NeuralNetwork(2, 6, 2, 4, 0.1);
-        nn2 = new NeuralNetwork(2, 6, 2, 1, 0.1);
     };
 
     game.setup = function(){
@@ -65,18 +61,16 @@ let gameWindow = function(game){
 
         game.fill(0);
         
-        if(t11.x >= canvasWidth-tankWidth){t11.x = xBaseA+55;}
         let hit = t11.collide(m1);
         if (hit==true){
             console.log("hit");
         }
 
+        //movement through nn
         t11.train();
         t21.train();
-
         t11.move();
         t21.move();
-       
         //turret movement
         if (t % 60 == 0){
             t11.moveTurret();
@@ -84,21 +78,31 @@ let gameWindow = function(game){
             t=0;
         }
 
-        t11.display();  
-        t21.display();
-
+        //movement through keyboard
         // if(game.keyIsDown(game.LEFT_ARROW)){
-        //     t11.x -= 1;
+        //     if(t11.x > 1){
+        //         t11.x -= 1;
+        //     }
         // } else
         // if (game.keyIsDown(game.RIGHT_ARROW)){
-        //     t11.x += 1;
+        //     if(t11.x + t11.width < game.width){
+        //         t11.x += 1;
+        //     }
         // } else
         // if (game.keyIsDown(game.UP_ARROW)){
-        //     t11.y -= 1;
+            
+        //     if(t11.y > 1){
+        //         t11.y -= 1;
+        //     }
         // } else
         // if (game.keyIsDown(game.DOWN_ARROW)){
-        //     t11.y += 1;
+        //     if(t11.y + t11.width < game.height){
+        //         t11.y += 1;
+        //     }
         // }
+
+        t11.display();  
+        t21.display();
 
         // t21.display(game.random(360));
         // t21.x -= 1;
