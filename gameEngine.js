@@ -18,7 +18,9 @@ let tankWidth = 20;
 
 let gameWindow = function(game){
     let b1, b2, m1, m2, m3, m4, t11, t21;
-    game.preload = function(){};
+    let t = 0;
+    game.preload = function(){
+    };
 
     game.setup = function(){
         canvas = game.createCanvas(canvasWidth, canvasHeight);
@@ -44,12 +46,13 @@ let gameWindow = function(game){
     };
 
     game.draw = function(){
+        t += 1;
         game.background(242, 230, 193);
         game.fill(249, 67, 54);
         b1.display();
         game.fill(66, 80, 244);
         b2.display();
-        
+       
         game.fill(183, 154, 97);
         m1.display();
         m2.display();
@@ -57,34 +60,50 @@ let gameWindow = function(game){
         m4.display();
 
         game.fill(0);
-        t11.display(viewAngle=0);
-        // t11.x += 1;
-        if(t11.x >= canvasWidth-tankWidth){t11.x = xBaseA+55;}
+        
         let hit = t11.collide(m1);
         if (hit==true){
-            console.log(hit);
+            console.log("hit");
         }
-        // test code to move the tank around
-        if (game.keyIsDown(game.LEFT_ARROW)){
-            t11.x -= 1;
-            t11.rotateTurret(180);
-            console.log('LEFT');
+
+        //movement through nn
+        t11.train();
+        t21.train();
+        t11.move();
+        t21.move();
+        //turret movement
+        if (t % 60 == 0){
+            t11.moveTurret();
+            t21.moveTurret();
+            t=0;
         }
-        if (game.keyIsDown(game.RIGHT_ARROW)){
-            t11.x += 1;
-            t11.rotateTurret(0);
-            console.log('RIGHT');
-        }
-        if (game.keyIsDown(game.UP_ARROW)){
-            t11.y -= 1;
-            t11.rotateTurret(270);
-            console.log('UP');
-        }
-        if (game.keyIsDown(game.DOWN_ARROW)){
-            t11.y += 1;
-            t11.rotateTurret(90);
-            console.log('DOWN');
-        }
+
+        //movement through keyboard
+        // if(game.keyIsDown(game.LEFT_ARROW)){
+        //     if(t11.x > 1){
+        //         t11.x -= 1;
+        //     }
+        // } else
+        // if (game.keyIsDown(game.RIGHT_ARROW)){
+        //     if(t11.x + t11.width < game.width){
+        //         t11.x += 1;
+        //     }
+        // } else
+        // if (game.keyIsDown(game.UP_ARROW)){
+            
+        //     if(t11.y > 1){
+        //         t11.y -= 1;
+        //     }
+        // } else
+        // if (game.keyIsDown(game.DOWN_ARROW)){
+        //     if(t11.y + t11.width < game.height){
+        //         t11.y += 1;
+        //     }
+        // }
+
+        t11.display();  
+        t21.display();
+
         // t21.display(game.random(360));
         // t21.x -= 1;
         // if(t21.x <= 0){t21.x = xBaseB-25;}
@@ -93,5 +112,14 @@ let gameWindow = function(game){
     game.mousePressed = function(){
         t11.fire();
     }
+
+    // game.keyPressed = function(){
+        // if (game.keyCode == 65){
+        //     angle -= 45;
+        // } else
+        // if (game.keyCode == 68){
+        //     angle += 45;
+        // }
+    // }
 };
 let cnv = new p5(gameWindow, 'gameWindow');
