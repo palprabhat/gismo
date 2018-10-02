@@ -19,10 +19,15 @@ class Tank {
     for (let i = 0; i < 50; i++) {
       this.bullets.push(new Bullet(canvas));
     }
+
+    this.canMoveLeft = false;
+    this.canMoveRight = false;
+    this.canMoveUp = false;
+    this.canMoveDown = false;
   }
 
   // private functions
-  __checkCollision(obstacle, offsetLeft, offsetRight, offsetUp, offsetDown) {
+  __checkCollisionDirection(obstacle, offsetLeft, offsetRight, offsetUp, offsetDown) {
     if (
       this.x - offsetLeft < obstacle.x + obstacle.width && //left
       this.x + this.width + offsetRight > obstacle.x && //right
@@ -66,29 +71,39 @@ class Tank {
     this.canvas.pop();
   }
 
-  // public functions
-  display(color) {
-    this.canvas.push();
-    this.canvas.translate(this.x, this.y);
-    this.__rotateTurret(this.viewAngle);
-    this.canvas.fill(color);
-    this.canvas.rect(0, 0, this.width, this.width);
-    this.canvas.pop();
+  __checkCollision(obstacles, direction) {
+    let collide = false;
+    let BreakException = {};
+
+    try{
+      obstacles.forEach(function(obstacle){
+        // left
+        if (direction === 0) {
+          collide = this.__checkCollisionDirection(obstacle, 2, 0, 0, 0);
+        }
+        // right
+        if (direction === 1) {
+          collide = this.__checkCollisionDirection(obstacle, 0, 2, 0, 0);
+        }
+        // up
+        if (direction === 2) {
+          collide = this.__checkCollisionDirection(obstacle, 0, 0, 2, 0);
+        }
+        // down
+        if (direction === 3) {
+          collide = this.__checkCollisionDirection(obstacle, 0, 0, 0, 2);
+        }
+        if(collide){
+          throw BreakException;
+        }
+      }, this);
+    } catch (e){
+      if (e !== BreakException) throw e;
+    }
+    return collide; 
   }
 
-  train() {
-    this.movementNetwork.train(
-      [Math.random(), Math.random()],
-      [Math.random(), Math.random(), Math.random(), Math.random()]
-    );
-    this.turretNetwork.train([Math.random(), Math.random()], [Math.random()]);
-  }
-
-  predictMovementDirection() {
-    return this.movementNetwork.argMax(this.movementNetwork.predict([this.x, this.y]));
-  }
-
-  move(direction) {
+  __move(direction) {
     switch (direction) {
       case 0:
         if (this.x > 1) {
@@ -113,6 +128,28 @@ class Tank {
     }
   }
 
+  // public functions
+  display(color) {
+    this.canvas.push();
+    this.canvas.translate(this.x, this.y);
+    this.__rotateTurret(this.viewAngle);
+    this.canvas.fill(color);
+    this.canvas.rect(0, 0, this.width, this.width);
+    this.canvas.pop();
+  }
+
+  train() {
+    this.movementNetwork.train(
+      [Math.random(), Math.random()],
+      [Math.random(), Math.random(), Math.random(), Math.random()]
+    );
+    this.turretNetwork.train([Math.random(), Math.random()], [Math.random()]);
+  }
+
+  predictMovementDirection() {
+    return this.movementNetwork.argMax(this.movementNetwork.predict([this.x, this.y]));
+  }
+
   moveTurret() {
     let turretMovement = this.turretNetwork.predict([this.x, this.y]);
 
@@ -123,22 +160,66 @@ class Tank {
     }
   }
 
-  checkCollision(obstacle, direction) {
-    // left
-    if (direction === 0) {
-      return this.__checkCollision(obstacle, 2, 0, 0, 0);
+  checkForCollisionAndMove(obstacles, direction){
+    if (direction === 0){
+      if (!(this.__checkCollision(obstacles, direction)) || this.canMoveLeft){
+        this.__move(direction);
+        this.canMoveLeft = false;
+        this.canMoveUp = false;
+        this.canMoveDown = false;
+        this.canMoveRight = false;
+      }
+      else{
+        this.canMoveLeft = false;
+        this.canMoveUp = true;
+        this.canMoveDown = true;
+        this.canMoveRight = true;
+      }
     }
-    // right
-    if (direction === 1) {
-      return this.__checkCollision(obstacle, 0, 2, 0, 0);
+    else if (direction === 1){
+      if (!(this.__checkCollision(obstacles, direction)) || this.canMoveRight){
+        this.__move(direction);
+        this.canMoveLeft = false;
+        this.canMoveUp = false;
+        this.canMoveDown = false;
+        this.canMoveRight = false;
+      }
+      else{
+        this.canMoveLeft = true;
+        this.canMoveUp = true;
+        this.canMoveDown = true;
+        this.canMoveRight = false;
+      }
     }
-    // up
-    if (direction === 2) {
-      return this.__checkCollision(obstacle, 0, 0, 2, 0);
-    }
-    // down
-    if (direction === 3) {
-      return this.__checkCollision(obstacle, 0, 0, 0, 2);
+    else if (direction === 2){
+      if (!(this.__checkCollision(obstacles, direction)) || this.canMoveUp){
+        this.__move(direction);
+        this.canMoveLeft = false;
+        this.canMoveUp = false;
+        this.canMoveDown = false;
+        this.canMoveRight = false;
+      }
+      else{
+        this.canMoveLeft = true;
+        this.canMoveUp = false;
+        this.canMoveDown = true;
+        this.canMoveRight = true;
+      }
+    } 
+    else{
+      if (!(this.__checkCollision(obstacles, direction)) || this.canMoveDown){
+        this.__move(direction);
+        this.canMoveLeft = false;
+        this.canMoveUp = false;
+        this.canMoveDown = false;
+        this.canMoveRight = false;
+      }
+      else{
+        this.canMoveLeft = true;
+        this.canMoveUp = true;
+        this.canMoveDown = false;
+        this.canMoveRight = true;
+      }
     }
   }
 
