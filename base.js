@@ -1,56 +1,93 @@
 class Base{
   constructor(canvas, position, color){
+    this.canvas = canvas;
     this.position = position;
+
+    this.x = this.__getRandomIntInclusive(10, this.canvas.width - 60);
     if(this.position === 0){
-      this.x = 10;
-      this.y = 10;
+      this.y = this.__getRandomIntInclusive(10, 80);
     }
     else{
-      this.x = 580;
-      this.y = 420;
+      this.y = this.__getRandomIntInclusive(this.canvas.height - 60, this.canvas.height - 130);
     }
 
     this.width = 50;
     this.height = 50;
-    this.canvas = canvas;
     this.color = color;
     this.health = 100;
     this.tankWidth = 20;
 
     this.tanks = [];
-    if (this.position === 0){
-      for (let i=0; i<4; i++) {
-        let rndX1 = this.__getRandomIntInclusive(this.x + 55, this.x + 105 - this.tankWidth);
-        let rndY1 = this.__getRandomIntInclusive(this.y, this.y + 55);
 
-        let rndX2 = this.__getRandomIntInclusive(this.x, this.x + 105);
-        let rndY2 = this.__getRandomIntInclusive(this.y + 55, this.y + 105 - this.tankWidth);
-
-        let rndAxis = Math.floor(Math.random() * Math.floor(2));
-
-        if (rndAxis === 0){
-          this.tanks.push(new Tank(canvas, rndX1, rndY1, this.tankWidth));
-        } 
-        else {
-          this.tanks.push(new Tank(canvas, rndX2, rndY2, this.tankWidth));
+    for (let i=0; i<4; i++) {
+      while (true){
+        //top
+        let rndXPos = [];
+        let rndYPos = [];
+        if (this.y >= 40 ) {
+          while (true) {
+            let rndX = this.__getRandomIntInclusive(this.x - 60, this.x + this.width + 60);
+            let rndY = this.__getRandomIntInclusive(this.y - 60, this.y - this.tankWidth - 10);
+            if (rndY >= 10 && (rndX>=10 && rndX <= this.canvas.width - this.tankWidth - 10)){
+              rndXPos = [...rndXPos, rndX];
+              rndYPos = [...rndYPos, rndY];
+              break;
+            }
+          };
         }
-      }
-    }
-    else{
-      for (let i=0; i<4; i++){
-        let rndX1 = this.__getRandomIntInclusive(this.x - 55, this.x - 5 - this.tankWidth);
-        let rndY1 = this.__getRandomIntInclusive(this.y - 55, this.y + this.width - this.tankWidth);
 
-        let rndX2 = this.__getRandomIntInclusive(this.x - 5, this.x + this.width - this.tankWidth);
-        let rndY2 = this.__getRandomIntInclusive(this.y - 55, this.y - 5) - this.tankWidth;
+        //right
+        if (this.x <= this.canvas.width - this.width - 40) {
+          while (true){
+            let rndX = this.__getRandomIntInclusive(this.x + this.width + 10, this.x + this.width - this.tankWidth + 60);
+            let rndY = this.__getRandomIntInclusive(this.y - 10, this.y + this.width + 10);
+            if ((rndX <= this.canvas.width - this.tankWidth - 10) && (rndY >= 10 && rndY <= this.canvas.height - this.tankWidth - 10)){
+              rndXPos = [...rndXPos, rndX];
+              rndYPos = [...rndYPos, rndY];
+              break;
+            }
+          };
+        }
 
-        let rndAxis = Math.floor(Math.random() * Math.floor(2));
+        //bottom
+        if (this.y <= this.canvas.height - this.height - 40) {
+          while (true){
+            let rndX = this.__getRandomIntInclusive(this.x - 60, this.x + this.width + 60);
+            let rndY = this.__getRandomIntInclusive(this.y + this.width + 10, this.y + this.width - this.tankWidth + 60);
+            if ((rndY <= this.canvas.height - this.tankWidth - 10) && (rndX>=10 && rndX <= this.canvas.width - this.tankWidth - 10)){
+              rndXPos = [...rndXPos, rndX];
+              rndYPos = [...rndYPos, rndY];
+              break;
+            }
+          };
+        }
 
-        if (rndAxis == 0){
-          this.tanks.push(new Tank(canvas, rndX1, rndY1, this.tankWidth));
-        } 
-        else {
-          this.tanks.push(new Tank(canvas, rndX2, rndY2, this.tankWidth));
+        //left
+        if (this.x >=  40) {
+          while (true){
+            let rndX = this.__getRandomIntInclusive(this.x - 60, this.x - this.tankWidth - 10);
+            let rndY = this.__getRandomIntInclusive(this.y - 10, this.y + this.width + 10);
+            if (rndX >= 10 && (rndY >= 10 && rndY <= this.canvas.height - this.tankWidth - 10)){
+              rndXPos = [...rndXPos, rndX];
+              rndYPos = [...rndYPos, rndY];
+              break;
+            }
+          };
+        }
+
+        let rndAxis = Math.floor(Math.random() * Math.floor(rndXPos.length));
+
+        let hit = false;
+        for(let tank of this.tanks){
+          hit = this.canvas.collideRectRect(rndXPos[rndAxis],rndYPos[rndAxis],this.tankWidth,this.tankWidth,tank.x,tank.y,tank.width,tank.height);
+          if (hit === true){
+            break;
+          }
+        }
+
+        if (hit === false){
+          this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth));
+          break;
         }
       }
     }
@@ -67,7 +104,7 @@ class Base{
     this.canvas.rect(this.x, this.y, this.width, this.height);
 
     this.tanks.forEach(function(tank){
-      if(tank.health === 0){
+      if(tank.health <= 0){
         let deadTank = this.tanks.splice(this.tanks.indexOf(tank), 1);
         console.log(deadTank);
       }
