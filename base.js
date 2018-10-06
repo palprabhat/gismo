@@ -16,7 +16,7 @@ class Base{
     this.color = color;
     this.health = 100;
     this.tankWidth = 20;
-
+    const numTanks = 2;
     this.tanks = [];
 
     for (let i=0; i<4; i++) {
@@ -96,10 +96,10 @@ class Base{
   __getRandomIntInclusive(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
+    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
   }
 
-  display(){
+  display() {
     this.canvas.fill(this.color);
     this.canvas.rect(this.x, this.y, this.width, this.height);
 
@@ -109,7 +109,7 @@ class Base{
         console.log(deadTank);
       }
 
-      if(tank != undefined){
+      if (tank != undefined) {
         tank.display(this.color);
       }
     }, this);

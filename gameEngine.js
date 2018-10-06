@@ -78,8 +78,9 @@ let gameWindow = function(game) {
 
     // movement through nn
     t += 1;
-    bases.forEach(function(base){
+    bases.forEach(function(base) {
       let indexBase = bases.indexOf(base);
+      
       let opponentBase = (indexBase === 0) ? bases[1] : bases[0];
       
       base.tanks.forEach(function(tank){
@@ -94,7 +95,7 @@ let gameWindow = function(game) {
         }
       });
     });
-  
+
     // movement through keyboard
     let opponentBase = bases[1];
     if (bases[0].tanks[0] != undefined)
@@ -156,14 +157,14 @@ let gameWindow = function(game) {
     checkGameResult();
   };
 
-  display = function(){
-    obstacles.forEach(function(obstacle){
+  display = function() {
+    obstacles.forEach(function(obstacle) {
       obstacle.display();
     });
-    bases.forEach(function(base){
+    bases.forEach(function(base) {
       base.display();
     });
-  }
+  };
 
   checkGameResult = function(){
     bases.forEach(function(base){
@@ -180,11 +181,10 @@ let gameWindow = function(game) {
     bases[0].tanks[0].fire();
   };
 
-  game.keyPressed = function(){
-    if (game.keyCode === 65){
+  game.keyPressed = function() {
+    if (game.keyCode === 65) {
       bases[0].tanks[0].viewAngle -= 45;
-    } else
-    if (game.keyCode === 68){
+    } else if (game.keyCode === 68) {
       bases[0].tanks[0].viewAngle += 45;
     }
   }; 
