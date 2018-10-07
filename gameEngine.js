@@ -77,24 +77,24 @@ let gameWindow = function(game) {
     game.background(242, 230, 193);
 
     // movement through nn
-    t += 1;
-    bases.forEach(function(base) {
-      let indexBase = bases.indexOf(base);
+    // t += 1;
+    // bases.forEach(function(base) {
+    //   let indexBase = bases.indexOf(base);
       
-      let opponentBase = (indexBase === 0) ? bases[1] : bases[0];
+    //   let opponentBase = (indexBase === 0) ? bases[1] : bases[0];
       
-      base.tanks.forEach(function(tank){
-        let friendlyTanks = base.tanks.filter(t => t !=  tank);
-        tank.train();
-        let direction = tank.predictMovementDirection();
-        tank.checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks, base, friendlyTanks), direction);
+    //   base.tanks.forEach(function(tank){
+    //     let friendlyTanks = base.tanks.filter(t => t !=  tank);
+    //     tank.train();
+    //     let direction = tank.predictMovementDirection();
+    //     tank.checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks, base, friendlyTanks), direction);
 
-        if (t % 60 === 0) {
-          tank.moveTurret();
-          t = 0;
-        }
-      });
-    });
+    //     if (t % 60 === 0) {
+    //       tank.moveTurret();
+    //       t = 0;
+    //     }
+    //   });
+    // });
 
     // movement through keyboard
     let opponentBase = bases[1];
@@ -163,7 +163,15 @@ let gameWindow = function(game) {
     });
     bases.forEach(function(base) {
       base.display();
+
+    base.tanks.forEach(function(tank){
+      tank.bullets.forEach(function(bullet){
+        bullet.display();
+        bullet.update();
+      })
+    })
     });
+    
   };
 
   checkGameResult = function(){
@@ -177,7 +185,7 @@ let gameWindow = function(game) {
   }
 
   game.mousePressed = function() {
-    console.log(game.mouseX, game.mouseY);
+    
     bases[0].tanks[0].fire();
   };
 

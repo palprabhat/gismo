@@ -24,9 +24,10 @@ class Tank {
     this.lastObstacle;
 
     this.bullets = [];
-    for (let i = 0; i < 50; i++) {
-      this.bullets.push(new Bullet(canvas));
-    }
+
+    // for (let i = 0; i < 50; i++) {
+    //   this.bullets.push(new Bullet(canvas));
+    // }
 
     this.canMoveLeft = false;
     this.canMoveRight = false;
@@ -161,7 +162,7 @@ class Tank {
     this.canvas.push();
     this.canvas.translate(this.x, this.y);
     this.__rotateTurret(this.viewAngle);
-    this.__drawFOV(this.viewAngle);
+    // this.__drawFOV(this.viewAngle);
     this.canvas.fill(color);
     this.canvas.rect(0, 0, this.width, this.width);
     this.canvas.pop();
@@ -248,6 +249,10 @@ class Tank {
   }
 
   fire() {
+    
+    this.bullets.push(new Bullet(this.canvas, this.x +10,this.y+10,this.viewAngle));
     console.log("fire in the hole");
+    
+    
   }
 }
