@@ -79,10 +79,8 @@ let gameWindow = function(game) {
     // movement through nn
     t += 1;
     bases.forEach(function(base) {
-      let indexBase = bases.indexOf(base);
-      
+      let indexBase = bases.indexOf(base); 
       let opponentBase = (indexBase === 0) ? bases[1] : bases[0];
-      
       base.tanks.forEach(function(tank){
         let friendlyTanks = base.tanks.filter(t => t !=  tank);
         tank.train();
@@ -155,6 +153,7 @@ let gameWindow = function(game) {
 
     display();
     checkGameResult();
+    // game.noLoop();
   };
 
   display = function() {
@@ -162,7 +161,7 @@ let gameWindow = function(game) {
       obstacle.display();
     });
     bases.forEach(function(base) {
-      base.display();
+      base.display(obstacles);
     });
   };
 
@@ -170,7 +169,7 @@ let gameWindow = function(game) {
     bases.forEach(function(base){
       if (base.tanks.length === 0 || base.health === 0){
         game.noLoop();
-        let baseIndex = (bases.indexOf(base) == 0) ? "B" : "A";
+        let baseIndex = (bases.indexOf(base) == 0) ? "Blue" : "Red";
         console.log("Winner Winner Chicken Dinner!!\nTeam " + baseIndex + " won");
       }
     })
@@ -183,9 +182,9 @@ let gameWindow = function(game) {
 
   game.keyPressed = function() {
     if (game.keyCode === 65) {
-      bases[0].tanks[0].viewAngle -= 45;
+      bases[0].tanks[0].turretAngle -= 45;
     } else if (game.keyCode === 68) {
-      bases[0].tanks[0].viewAngle += 45;
+      bases[0].tanks[0].turretAngle += 45;
     }
   }; 
 };
