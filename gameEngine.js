@@ -161,8 +161,15 @@ let gameWindow = function(game) {
       obstacle.display();
     });
     bases.forEach(function(base) {
-      base.display(obstacles);
+    base.tanks.forEach(function(tank){
+      tank.bullets.forEach(function(bullet){
+        bullet.display();
+        bullet.update();
+      })
+    })
+     base.display(obstacles);
     });
+    
   };
 
   checkGameResult = function(){
@@ -176,7 +183,6 @@ let gameWindow = function(game) {
   }
 
   game.mousePressed = function() {
-    console.log(game.mouseX, game.mouseY);
     bases[0].tanks[0].fire();
   };
 

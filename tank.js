@@ -19,9 +19,10 @@ class Tank {
     this.lastObstacle;
 
     this.bullets = [];
-    for (let i = 0; i < 50; i++) {
-      this.bullets.push(new Bullet(canvas));
-    }
+
+    // for (let i = 0; i < 50; i++) {
+    //   this.bullets.push(new Bullet(canvas));
+    // }
 
     this.canMoveLeft = false;
     this.canMoveRight = false;
@@ -302,6 +303,10 @@ class Tank {
   }
 
   fire() {
+    
+    this.bullets.push(new Bullet(this.canvas, this.x +10,this.y+10,this.viewAngle));
     console.log("fire in the hole");
+    
+    
   }
 }
