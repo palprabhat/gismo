@@ -185,7 +185,6 @@ let gameWindow = function(game) {
   }
 
   game.mousePressed = function() {
-    
     bases[0].tanks[0].fire();
   };
 
