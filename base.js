@@ -16,10 +16,10 @@ class Base{
     this.color = color;
     this.health = 100;
     this.tankWidth = 20;
-    const numTanks = 2;
+    const numTanks = 4;
     this.tanks = [];
 
-    for (let i=0; i<4; i++) {
+    for (let i=0; i<numTanks; i++) {
       while (true){
         //top
         let rndXPos = [];
@@ -99,7 +99,7 @@ class Base{
     return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
   }
 
-  display() {
+  display(obstacles) {
     this.canvas.fill(this.color);
     this.canvas.rect(this.x, this.y, this.width, this.height);
 
@@ -110,7 +110,7 @@ class Base{
       }
 
       if (tank != undefined) {
-        tank.display(this.color);
+        tank.display(this.color, obstacles);
       }
     }, this);
   }

@@ -9,15 +9,10 @@ class Tank {
     this.decreaseHealth = true;
 
     let rndNumber = Math.floor(Math.random() * Math.floor(8));
-    this.viewAngle = rndNumber * 45;
-    this.fovStartAngle = 30;
-    this.fovEndAngle = 60;
-    this.fovRange =
-      2 *
-      Math.sqrt(
-        this.canvas.width * this.canvas.width +
-          this.canvas.height * this.canvas.height
-      );
+    this.turretAngle = rndNumber * 45;
+    this.viewAngle = 60;
+
+    this.fovRange = Math.sqrt(this.canvas.width * this.canvas.width + this.canvas.height * this.canvas.height);
 
     this.movementNetwork = new NeuralNetwork(2, 6, 2, 4, 0.1);
     this.turretNetwork = new NeuralNetwork(2, 6, 2, 1, 0.1);
@@ -73,30 +68,89 @@ class Tank {
     }
   }
 
-  __rotateTurret(viewAngle) {
+  __rotateTurret(turretAngle) {
     this.canvas.push();
     this.canvas.translate(this.width / 2, this.width / 2);
-    this.canvas.rotate(viewAngle - 45);
+    this.canvas.rotate(turretAngle - 45);
     this.canvas.strokeWeight(4);
     this.canvas.line(0, 0, this.width - 5, this.width - 5);
     this.canvas.pop();
   }
 
-  __drawFOV(viewAngle) {
+  __drawFOV(turretAngle, obstacles) {
     this.canvas.push();
-    this.canvas.noStroke();
-    this.canvas.translate(this.width / 2, this.width / 2);
-    this.canvas.rotate(viewAngle - 45);
-    this.canvas.fill(255, 255, 255, 100);
+    this.canvas.strokeWeight(1);
+    this.canvas.stroke(0, 0, 0, 50);
 
-    this.canvas.arc(
-      this.width - 15,
-      this.width - 15,
-      this.fovRange,
-      this.fovRange,
-      this.fovStartAngle,
-      this.fovEndAngle
-    );
+    let x1 = this.width / 2;
+    let y1 = this.width / 2;
+
+    for(let theta = (turretAngle - this.viewAngle/2); theta <= (turretAngle + this.viewAngle/2); theta += 0.5){
+      let x2 = x1 + this.fovRange * Math.cos(Math.PI * (theta)/180.0);
+      let y2 = y1 + this.fovRange * Math.sin(Math.PI * (theta)/180.0);
+
+      let x2List = [];
+      let y2List = [];
+
+      let maxDistance = Infinity;
+      let maxDistanceCopy = maxDistance;
+
+      let hit;
+      for(let obstacle of obstacles){
+        hit = this.canvas.collideLineRect(this.x + x1, this.y + y1, this.x + x2, this.y + y2, 
+                                          obstacle.x, obstacle.y, obstacle.width, obstacle.height, true);
+        
+        if (typeof(hit.top.x) !== 'boolean'){
+          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.top.x, hit.top.y);
+          if(newDistance < maxDistance){
+            maxDistance = newDistance;
+            x2 = hit.top.x - this.x;
+            y2 = hit.top.y - this.y;
+          }
+        }
+        if (typeof(hit.right.x) !== 'boolean'){
+          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.right.x, hit.right.y);
+          if(newDistance < maxDistance){
+            maxDistance = newDistance;
+            x2 = hit.right.x - this.x;
+            y2 = hit.right.y - this.y;
+          }
+        }
+        if (typeof(hit.bottom.x) !== 'boolean'){
+          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.bottom.x, hit.bottom.y);
+          if(newDistance < maxDistance){
+            maxDistance = newDistance;
+            x2 = hit.bottom.x - this.x;
+            y2 = hit.bottom.y - this.y;
+          }
+        }
+        if (typeof(hit.left.x) !== 'boolean'){
+          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.left.x, hit.left.y);
+          if(newDistance < maxDistance){
+            maxDistance = newDistance;
+            x2 = hit.left.x - this.x;
+            y2 = hit.left.y - this.y;
+          }
+        }
+
+        if (typeof(hit.top.x) !== "boolean" || typeof(hit.bottom.x) !== "boolean" || typeof(hit.left.x) !== "boolean" || typeof(hit.right.x) !== "boolean"){
+          x2List = [...x2List, x2];
+          y2List = [...y2List, y2];
+        }
+      }
+
+      for (let i = 0; i < x2List.length; i++){
+        let newDistance = this.canvas.dist(this.x + x1, this.y + y1, this.x + x2List[i], this.y + y2List[i]);
+        if(newDistance <= maxDistance){
+          maxDistance = newDistance;
+          x2 = x2List[i];
+          y2 = y2List[i];
+        }
+      }
+      if(maxDistance != maxDistanceCopy){
+        this.canvas.line(x1, y1, x2, y2);
+      }
+    }
     this.canvas.pop();
   }
 
@@ -158,11 +212,11 @@ class Tank {
   }
 
   // public functions
-  display(color) {
+  display(color, obstacles) {
     this.canvas.push();
     this.canvas.translate(this.x, this.y);
-    this.__rotateTurret(this.viewAngle);
-    // this.__drawFOV(this.viewAngle);
+    this.__drawFOV(this.turretAngle, obstacles);
+    this.__rotateTurret(this.turretAngle);
     this.canvas.fill(color);
     this.canvas.rect(0, 0, this.width, this.width);
     this.canvas.pop();
@@ -186,9 +240,9 @@ class Tank {
     let turretMovement = this.turretNetwork.predict([this.x, this.y]);
 
     if (turretMovement > 0.5) {
-      this.viewAngle -= 45;
+      this.turretAngle -= 45;
     } else {
-      this.viewAngle += 45;
+      this.turretAngle += 45;
     }
   }
 
