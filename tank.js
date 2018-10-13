@@ -6,7 +6,9 @@ class Tank {
     this.width = width;
     this.height = width;
     this.canvas = canvas;
+    this.bulletCount = 50;
     this.decreaseHealth = true;
+    this.showFOV = false;
 
     let rndNumber = Math.floor(Math.random() * Math.floor(8));
     this.turretAngle = rndNumber * 45;
@@ -19,10 +21,6 @@ class Tank {
     this.lastObstacle;
 
     this.bullets = [];
-
-    // for (let i = 0; i < 50; i++) {
-    //   this.bullets.push(new Bullet(canvas));
-    // }
 
     this.canMoveLeft = false;
     this.canMoveRight = false;
@@ -47,8 +45,6 @@ class Tank {
       if (this.decreaseHealth) {
         if (obstacle instanceof Mountain) {
           this.health -= 20;
-        } else if (obstacle instanceof Bullet) {
-          this.health -= 25;
         } else if (obstacle instanceof Tank) {
           this.health -= 5;
           obstacle.health -= 5;
@@ -147,8 +143,10 @@ class Tank {
           y2 = y2List[i];
         }
       }
-      if(maxDistance != maxDistanceCopy){
-        this.canvas.line(x1, y1, x2, y2);
+      if(this.showFOV){
+        if(maxDistance != maxDistanceCopy){
+          this.canvas.line(x1, y1, x2, y2);
+        }
       }
     }
     this.canvas.pop();
@@ -302,11 +300,14 @@ class Tank {
     }
   }
 
-  fire() {
-    
-    this.bullets.push(new Bullet(this.canvas, this.x +10,this.y+10,this.viewAngle));
-    console.log("fire in the hole");
-    
-    
+  fire() { 
+    if(this.bulletCount > 0){
+      console.log("fire in the hole");
+      this.bullets.push(new Bullet(this.canvas, this.x +10, this.y+10, this.turretAngle));
+      this.bulletCount--;
+    }
+    else{
+      console.log("out of ammo");
+    }
   }
 }
