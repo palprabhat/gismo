@@ -31,7 +31,10 @@ class Bullet {
 			hit = this.canvas.collidePointRect(this.pos.x,this.pos.y,obstacle.x,obstacle.y,obstacle.width,obstacle.height);
 			if(hit === true){
 				if (obstacle instanceof Tank) {
-          obstacle.health -= 25;
+					obstacle.health -= 25;
+					if(obstacle.health <= 0){
+						obstacle.causeOfDeath = {obstacle};
+					}
         } else if (obstacle instanceof Base) {
           obstacle.health -= 5;
         }

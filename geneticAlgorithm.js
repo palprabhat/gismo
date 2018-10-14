@@ -14,6 +14,10 @@ function calculateFitness(population) {
     }
 }
 
+function calculateFitnessMovement(population){
+    
+}
+
 function naturalSelection(population) {
     var bestFitness = population[0].fitness;
     var bestBrain = population[0].brain.copy();

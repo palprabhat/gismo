@@ -67,7 +67,6 @@ class NeuralNetwork {
             return undefined;
         }
 
-
         this.hidden = [];
         this.hidden[0] = Matrix.multiply(this.weights[0], input);
         this.hidden[0].add(this.bias[0]);

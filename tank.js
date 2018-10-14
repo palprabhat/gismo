@@ -1,41 +1,37 @@
 class Tank {
-  constructor(canvas, x, y, width) {
-    this.health = 100;
+  constructor(canvas, x, y, width, id) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = width;
     this.canvas = canvas;
+    this.id = id;
+    
+    this.bullets = [];
     this.bulletCount = 50;
+    
+    this.health = 100;
     this.decreaseHealth = true;
-    this.showFOV = false;
-
+    this.causeOfDeath;
+    
     let rndNumber = Math.floor(Math.random() * Math.floor(8));
     this.turretAngle = rndNumber * 45;
     this.viewAngle = 60;
-
     this.fovRange = Math.sqrt(this.canvas.width * this.canvas.width + this.canvas.height * this.canvas.height);
-
-    this.movementNetwork = new NeuralNetwork(2, 6, 2, 4, 0.1);
-    this.turretNetwork = new NeuralNetwork(2, 6, 2, 1, 0.1);
+    this.showFOV = false;
+    
     this.lastObstacle;
-
-    this.bullets = [];
-
     this.canMoveLeft = false;
     this.canMoveRight = false;
     this.canMoveUp = false;
     this.canMoveDown = false;
+
+    this.movementNetwork = new NeuralNetwork(2, 6, 2, 4, 0.1);
+    this.turretNetwork = new NeuralNetwork(2, 6, 2, 1, 0.1);
   }
 
   // private functions
-  __checkCollisionDirection(
-    obstacle,
-    offsetLeft,
-    offsetRight,
-    offsetUp,
-    offsetDown
-  ) {
+  __checkCollisionDirection(obstacle, offsetLeft, offsetRight, offsetUp, offsetDown) {
     if (
       this.x - offsetLeft < obstacle.x + obstacle.width && //left
       this.x + this.width + offsetRight > obstacle.x && //right
@@ -51,6 +47,9 @@ class Tank {
         } else if (obstacle instanceof Base) {
           this.health -= 10;
           obstacle.health -= 2;
+        }
+        if(this.health <= 0){
+          this.causeOfDeath = {obstacle};
         }
         this.decreaseHealth = false;
       }

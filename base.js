@@ -2,6 +2,7 @@ class Base{
   constructor(canvas, position, color){
     this.canvas = canvas;
     this.position = position;
+    this.id = position;
 
     this.x = this.__getRandomIntInclusive(10, this.canvas.width - 60);
     if(this.position === 0){
@@ -18,6 +19,7 @@ class Base{
     this.tankWidth = 20;
     const numTanks = 4;
     this.tanks = [];
+    this.deadTanks = [];
 
     for (let i=0; i<numTanks; i++) {
       while (true){
@@ -86,7 +88,7 @@ class Base{
         }
 
         if (hit === false){
-          this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth));
+          this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth, this.id));
           break;
         }
       }
@@ -106,7 +108,7 @@ class Base{
     this.tanks.forEach(function(tank){
       if(tank.health <= 0){
         let deadTank = this.tanks.splice(this.tanks.indexOf(tank), 1);
-        console.log(deadTank);
+        this.deadTanks = [...this.deadTanks, deadTank[0]];
       }
 
       if (tank != undefined) {
