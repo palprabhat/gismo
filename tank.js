@@ -6,7 +6,8 @@ class Tank {
     this.height = width;
     this.canvas = canvas;
     this.id = id;
-    
+    this.diagonal = Math.sqrt(Math.pow(this.canvas.width, 2) + Math.pow(this.canvas.height, 2));
+
     this.bullets = [];
     this.bulletCount = 50;
     
@@ -17,14 +18,13 @@ class Tank {
     let rndNumber = Math.floor(Math.random() * Math.floor(8));
     this.turretAngle = rndNumber * 45;
     this.viewAngle = 60;
-    this.fovRange = Math.sqrt(this.canvas.width * this.canvas.width + this.canvas.height * this.canvas.height);
+    this.fovRange = this.diagonal;
     this.showFOV = false;
+    this.vision = [];
     
     this.lastObstacle;
-    this.canMoveLeft = false;
-    this.canMoveRight = false;
-    this.canMoveUp = false;
-    this.canMoveDown = false;
+    this.stop = [false, false, false, false]; // [stopLeft, stopRight, stopUp, stopDown]
+    this.currentCollision = [false, false, false, false]; // [Left, Right, Up, Down]
 
     this.movementNetwork = new NeuralNetwork(2, 6, 2, 4, 0.1);
     this.turretNetwork = new NeuralNetwork(2, 6, 2, 1, 0.1);
@@ -79,6 +79,8 @@ class Tank {
 
     let x1 = this.width / 2;
     let y1 = this.width / 2;
+    this.vision = [];
+    let oneHotVision = [];
 
     for(let theta = (turretAngle - this.viewAngle/2); theta <= (turretAngle + this.viewAngle/2); theta += 0.5){
       let x2 = x1 + this.fovRange * Math.cos(Math.PI * (theta)/180.0);
@@ -86,12 +88,15 @@ class Tank {
 
       let x2List = [];
       let y2List = [];
+      let obs = [];
+      let obst = [1,0,0,0,0,0]; //[D, FT, OT, FB, OB, M, FB, OB]
 
       let maxDistance = Infinity;
       let maxDistanceCopy = maxDistance;
 
       let hit;
-      for(let obstacle of obstacles){
+      let obstaclesToCheck = obstacles.filter(t => t !=  this)
+      for(let obstacle of obstaclesToCheck){
         hit = this.canvas.collideLineRect(this.x + x1, this.y + y1, this.x + x2, this.y + y2, 
                                           obstacle.x, obstacle.y, obstacle.width, obstacle.height, true);
         
@@ -131,6 +136,21 @@ class Tank {
         if (typeof(hit.top.x) !== "boolean" || typeof(hit.bottom.x) !== "boolean" || typeof(hit.left.x) !== "boolean" || typeof(hit.right.x) !== "boolean"){
           x2List = [...x2List, x2];
           y2List = [...y2List, y2];
+          if (obstacle instanceof Mountain) {
+            obs = [...obs, [maxDistance/this.diagonal,0,0,0,0,1]];
+          } else if (obstacle instanceof Base) {
+            if (this.id != obstacle.id){
+              obs = [...obs, [maxDistance/this.diagonal,0,0,0,1,0]]; //opponent base
+            } else {
+              obs = [...obs, [maxDistance/this.diagonal,0,0,1,0,0]]; //friendly base
+            }
+          } else if (obstacle instanceof Tank) {
+            if (this.id != obstacle.id){
+              obs = [...obs, [maxDistance/this.diagonal,0,1,0,0,0]]; //opponent tank
+            } else {
+              obs = [...obs, [maxDistance/this.diagonal,1,0,0,0,0]]; //friendly tank
+            }
+          }
         }
       }
 
@@ -140,6 +160,7 @@ class Tank {
           maxDistance = newDistance;
           x2 = x2List[i];
           y2 = y2List[i];
+          obst = obs[i];
         }
       }
       if(this.showFOV){
@@ -147,7 +168,9 @@ class Tank {
           this.canvas.line(x1, y1, x2, y2);
         }
       }
+      oneHotVision = [...oneHotVision, obst];
     }
+    this.vision = [...this.vision, oneHotVision];
     this.canvas.pop();
   }
 
@@ -244,58 +267,16 @@ class Tank {
   }
 
   checkForCollisionAndMove(obstacles, direction) {
-    if (direction === 0) {
-      if (!this.__checkCollision(obstacles, direction) || this.canMoveLeft) {
-        this.__move(direction);
-        this.canMoveLeft = false;
-        this.canMoveUp = false;
-        this.canMoveDown = false;
-        this.canMoveRight = false;
-      } else {
-        this.canMoveLeft = false;
-        this.canMoveUp = true;
-        this.canMoveDown = true;
-        this.canMoveRight = true;
-      }
-    } else if (direction === 1) {
-      if (!this.__checkCollision(obstacles, direction) || this.canMoveRight) {
-        this.__move(direction);
-        this.canMoveLeft = false;
-        this.canMoveUp = false;
-        this.canMoveDown = false;
-        this.canMoveRight = false;
-      } else {
-        this.canMoveLeft = true;
-        this.canMoveUp = true;
-        this.canMoveDown = true;
-        this.canMoveRight = false;
-      }
-    } else if (direction === 2) {
-      if (!this.__checkCollision(obstacles, direction) || this.canMoveUp) {
-        this.__move(direction);
-        this.canMoveLeft = false;
-        this.canMoveUp = false;
-        this.canMoveDown = false;
-        this.canMoveRight = false;
-      } else {
-        this.canMoveLeft = true;
-        this.canMoveUp = false;
-        this.canMoveDown = true;
-        this.canMoveRight = true;
-      }
+    let oppDirection= (direction === 0) ? 1 : (direction === 1) ? 0 : (direction === 2) ? 3 : 2;
+
+    if (!this.__checkCollision(obstacles, direction) || this.stop[direction]) {
+      this.stop.fill(false);
+      this.currentCollision[oppDirection] = false;
+      if (!currentCollision[direction]) this.__move(direction);
     } else {
-      if (!this.__checkCollision(obstacles, direction) || this.canMoveDown) {
-        this.__move(direction);
-        this.canMoveLeft = false;
-        this.canMoveUp = false;
-        this.canMoveDown = false;
-        this.canMoveRight = false;
-      } else {
-        this.canMoveLeft = true;
-        this.canMoveUp = true;
-        this.canMoveDown = false;
-        this.canMoveRight = true;
-      }
+      this.stop.fill(true);
+      this.stop[direction] = false;
+      this.currentCollision[direction] = true;
     }
   }
 
