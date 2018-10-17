@@ -69,7 +69,7 @@ let gameWindow = function(game) {
           bullet.display();
           bullet.update();
 
-          if(bullet.distTravelled >= this.maxRange){
+          if(bullet.distTravelled >= bullet.maxRange){
             tank.bullets.splice(tank.bullets.indexOf(bullet), 1);
             tank.targetsHit = [...tank.targetsHit, null];
           }
