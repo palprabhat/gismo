@@ -2,13 +2,13 @@
 
 ### TODO
 #### Sahil
-* Turret view filed
+* Implement TF
 
 #### Palash
-* Implement fire module
+* Test game
 
 #### Prabhat
-* code refactor
+* Implement GA
 
 
 
