@@ -10,6 +10,7 @@ class Tank {
 
     this.bullets = [];
     this.bulletCount = 50;
+    this.targetsHit = [];
     
     this.health = 100;
     this.decreaseHealth = true;
@@ -24,7 +25,7 @@ class Tank {
     
     this.lastObstacle;
     this.stop = [false, false, false, false]; // [stopLeft, stopRight, stopUp, stopDown]
-    this.currentCollision = [false, false, false, false]; // [Left, Right, Up, Down]
+    this.currentCollision = [null, null, null, null]; // [Left, Right, Up, Down]
 
     this.movementNetwork = new NeuralNetwork(2, 6, 2, 4, 0.1);
     this.turretNetwork = new NeuralNetwork(2, 6, 2, 1, 0.1);
@@ -89,7 +90,7 @@ class Tank {
       let x2List = [];
       let y2List = [];
       let obs = [];
-      let obst = [1,0,0,0,0,0]; //[D, FT, OT, FB, OB, M, FB, OB]
+      let obst = [1,0,0,0,0,0,0]; //[D, FT, OT, FB, OB, M, B]
 
       let maxDistance = Infinity;
       let maxDistanceCopy = maxDistance;
@@ -97,58 +98,75 @@ class Tank {
       let hit;
       let obstaclesToCheck = obstacles.filter(t => t !=  this)
       for(let obstacle of obstaclesToCheck){
-        hit = this.canvas.collideLineRect(this.x + x1, this.y + y1, this.x + x2, this.y + y2, 
-                                          obstacle.x, obstacle.y, obstacle.width, obstacle.height, true);
-        
-        if (typeof(hit.top.x) !== 'boolean'){
-          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.top.x, hit.top.y);
-          if(newDistance < maxDistance){
-            maxDistance = newDistance;
-            x2 = hit.top.x - this.x;
-            y2 = hit.top.y - this.y;
-          }
-        }
-        if (typeof(hit.right.x) !== 'boolean'){
-          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.right.x, hit.right.y);
-          if(newDistance < maxDistance){
-            maxDistance = newDistance;
-            x2 = hit.right.x - this.x;
-            y2 = hit.right.y - this.y;
-          }
-        }
-        if (typeof(hit.bottom.x) !== 'boolean'){
-          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.bottom.x, hit.bottom.y);
-          if(newDistance < maxDistance){
-            maxDistance = newDistance;
-            x2 = hit.bottom.x - this.x;
-            y2 = hit.bottom.y - this.y;
-          }
-        }
-        if (typeof(hit.left.x) !== 'boolean'){
-          let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.left.x, hit.left.y);
-          if(newDistance < maxDistance){
-            maxDistance = newDistance;
-            x2 = hit.left.x - this.x;
-            y2 = hit.left.y - this.y;
-          }
-        }
-
-        if (typeof(hit.top.x) !== "boolean" || typeof(hit.bottom.x) !== "boolean" || typeof(hit.left.x) !== "boolean" || typeof(hit.right.x) !== "boolean"){
-          x2List = [...x2List, x2];
-          y2List = [...y2List, y2];
-          if (obstacle instanceof Mountain) {
-            obs = [...obs, [maxDistance/this.diagonal,0,0,0,0,1]];
-          } else if (obstacle instanceof Base) {
-            if (this.id != obstacle.id){
-              obs = [...obs, [maxDistance/this.diagonal,0,0,0,1,0]]; //opponent base
-            } else {
-              obs = [...obs, [maxDistance/this.diagonal,0,0,1,0,0]]; //friendly base
+        if(obstacle instanceof Bullet) {
+          hit = this.canvas.collidePointLine(obstacle.pos.x,obstacle.pos.y,
+                                            this.x + x1, this.y + y1, this.x + x2, this.y + y2);
+          if(hit){
+            let newDistance = this.canvas.dist(this.x + x1, this.y + y1, obstacle.pos.x, obstacle.pos.y);
+            if(newDistance < maxDistance){
+              maxDistance = newDistance;
+              x2 = obstacle.pos.x - this.x;
+              y2 = obstacle.pos.y - this.y;
+              x2List = [...x2List, x2];
+              y2List = [...y2List, y2];
+              obs = [...obs, [maxDistance/this.diagonal,0,0,0,0,0,1]];
             }
-          } else if (obstacle instanceof Tank) {
-            if (this.id != obstacle.id){
-              obs = [...obs, [maxDistance/this.diagonal,0,1,0,0,0]]; //opponent tank
-            } else {
-              obs = [...obs, [maxDistance/this.diagonal,1,0,0,0,0]]; //friendly tank
+          }                         
+        } 
+        else {
+          hit = this.canvas.collideLineRect(this.x + x1, this.y + y1, this.x + x2, this.y + y2, 
+                                            obstacle.x, obstacle.y, obstacle.width, obstacle.height, true);
+        
+          if (typeof(hit.top.x) !== 'boolean'){
+            let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.top.x, hit.top.y);
+            if(newDistance < maxDistance){
+              maxDistance = newDistance;
+              x2 = hit.top.x - this.x;
+              y2 = hit.top.y - this.y;
+            }
+          }
+          if (typeof(hit.right.x) !== 'boolean'){
+            let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.right.x, hit.right.y);
+            if(newDistance < maxDistance){
+              maxDistance = newDistance;
+              x2 = hit.right.x - this.x;
+              y2 = hit.right.y - this.y;
+            }
+          }
+          if (typeof(hit.bottom.x) !== 'boolean'){
+            let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.bottom.x, hit.bottom.y);
+            if(newDistance < maxDistance){
+              maxDistance = newDistance;
+              x2 = hit.bottom.x - this.x;
+              y2 = hit.bottom.y - this.y;
+            }
+          }
+          if (typeof(hit.left.x) !== 'boolean'){
+            let newDistance = this.canvas.dist(this.x + x1, this.y + y1, hit.left.x, hit.left.y);
+            if(newDistance < maxDistance){
+              maxDistance = newDistance;
+              x2 = hit.left.x - this.x;
+              y2 = hit.left.y - this.y;
+            }
+          }
+
+          if (typeof(hit.top.x) !== "boolean" || typeof(hit.bottom.x) !== "boolean" || typeof(hit.left.x) !== "boolean" || typeof(hit.right.x) !== "boolean"){
+            x2List = [...x2List, x2];
+            y2List = [...y2List, y2];
+            if (obstacle instanceof Mountain) {
+              obs = [...obs, [maxDistance/this.diagonal,0,0,0,0,1,0]];
+            } else if (obstacle instanceof Base) {
+              if (this.id != obstacle.id){
+                obs = [...obs, [maxDistance/this.diagonal,0,0,0,1,0,0]]; //opponent base
+              } else {
+                obs = [...obs, [maxDistance/this.diagonal,0,0,1,0,0,0]]; //friendly base
+              }
+            } else if (obstacle instanceof Tank) {
+              if (this.id != obstacle.id){
+                obs = [...obs, [maxDistance/this.diagonal,0,1,0,0,0,0]]; //opponent tank
+              } else {
+                obs = [...obs, [maxDistance/this.diagonal,1,0,0,0,0,0]]; //friendly tank
+              }
             }
           }
         }
@@ -176,32 +194,24 @@ class Tank {
 
   __checkCollision(obstacles, direction) {
     let collide = false;
-    let BreakException = {};
 
-    try {
-      obstacles.forEach(function(obstacle) {
-        // left
-        if (direction === 0) {
-          collide = this.__checkCollisionDirection(obstacle, 2, 0, 0, 0);
-        }
-        // right
-        if (direction === 1) {
-          collide = this.__checkCollisionDirection(obstacle, 0, 2, 0, 0);
-        }
-        // up
-        if (direction === 2) {
-          collide = this.__checkCollisionDirection(obstacle, 0, 0, 2, 0);
-        }
-        // down
-        if (direction === 3) {
-          collide = this.__checkCollisionDirection(obstacle, 0, 0, 0, 2);
-        }
-        if (collide) {
-          throw BreakException;
-        }
-      }, this);
-    } catch (e) {
-      if (e !== BreakException) throw e;
+    for(let obstacle of obstacles){
+      if (direction === 0) { // left
+        collide = this.__checkCollisionDirection(obstacle, 2, 0, 0, 0);
+      } else
+      if (direction === 1) { // right
+        collide = this.__checkCollisionDirection(obstacle, 0, 2, 0, 0);
+      } else
+      if (direction === 2) { // up
+        collide = this.__checkCollisionDirection(obstacle, 0, 0, 2, 0);
+      } else
+      if (direction === 3) { // down
+        collide = this.__checkCollisionDirection(obstacle, 0, 0, 0, 2);
+      }
+      if (collide) {
+        this.currentCollision[direction] = obstacle;
+        break;
+      }
     }
     return collide;
   }
@@ -269,21 +279,28 @@ class Tank {
   checkForCollisionAndMove(obstacles, direction) {
     let oppDirection= (direction === 0) ? 1 : (direction === 1) ? 0 : (direction === 2) ? 3 : 2;
 
-    if (!this.__checkCollision(obstacles, direction) || this.stop[direction]) {
+    if (!this.__checkCollision(obstacles, direction) || this.stop[direction]) { // no collision
       this.stop.fill(false);
-      this.currentCollision[oppDirection] = false;
-      if (!currentCollision[direction]) this.__move(direction);
-    } else {
+      this.currentCollision[oppDirection] = null;
+      if (this.currentCollision[direction] === null){
+        this.__move(direction);
+      } else {
+        if(!this.canvas.collideRectRect(this.currentCollision[direction].x, this.currentCollision[direction].y, this.currentCollision[direction].width, this.currentCollision[direction].height,
+                                       this.x, this.y, this.width, this.width)){
+          this.currentCollision[direction] = null;
+          this.__move(direction);
+        }
+      }
+    } else { // collision
       this.stop.fill(true);
       this.stop[direction] = false;
-      this.currentCollision[direction] = true;
     }
   }
 
   fire() { 
     if(this.bulletCount > 0){
       console.log("fire in the hole");
-      this.bullets.push(new Bullet(this.canvas, this.x +10, this.y+10, this.turretAngle));
+      this.bullets.push(new Bullet(this.canvas, this.id, this.x + 10, this.y + 10, this.turretAngle));
       this.bulletCount--;
     }
     else{
