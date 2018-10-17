@@ -25,7 +25,7 @@ class NeuralNetworkTF {
       })
     );
 
-    for (let idx = 0; i < this.no_of_layers; idx++) {
+    for (let idx = 0; idx < this.no_of_layers; idx++) {
       // subsequent hidden layers
       model.add(
         tf.layers.dense({
@@ -60,21 +60,21 @@ class NeuralNetworkTF {
         shuffle: true,
         epochs: 10
       };
-      const response = await model.fit(X_train, y_train, config);
-      console.log(response.history.loss[0]);
+      const response = await model.fit(tf.tensor2d(X_train), tf.tensor2d(y_train), config);
+      // console.log(response.history.loss[0]);
     }
   }
 
   // Public functions
   train(X_train, y_train) {
-    __train(X_train, y_train).then(() => {
+    this.__train(X_train, y_train).then(() => {
       console.log("training complete");
     });
   }
 
   predict(X_train) {
     const model = this.__build_model();
-    return model.predict(X_train);
+    return model.predict(tf.tensor2d(X_train)).dataSync();
   }
 }
 // training data

@@ -1,14 +1,20 @@
 class Base{
-  constructor(canvas, position, color){
+  constructor(canvas, obstacles, position, color, x, y){
     this.canvas = canvas;
     this.position = position;
+    this.id = position;
 
-    this.x = this.__getRandomIntInclusive(10, this.canvas.width - 60);
-    if(this.position === 0){
-      this.y = this.__getRandomIntInclusive(10, 80);
-    }
-    else{
-      this.y = this.__getRandomIntInclusive(this.canvas.height - 60, this.canvas.height - 130);
+    if(x !== null && y !== null){
+      this.x = x;
+      this.y = y;
+    } else{
+      this.x = this.__getRandomIntInclusive(10, this.canvas.width - 60);
+      if(this.position === 0){
+        this.y = this.__getRandomIntInclusive(10, 80);
+      }
+      else{
+        this.y = this.__getRandomIntInclusive(this.canvas.height - 60, this.canvas.height - 130);
+      }
     }
 
     this.width = 50;
@@ -18,6 +24,7 @@ class Base{
     this.tankWidth = 20;
     const numTanks = 4;
     this.tanks = [];
+    this.deadTanks = [];
 
     for (let i=0; i<numTanks; i++) {
       while (true){
@@ -79,14 +86,21 @@ class Base{
 
         let hit = false;
         for(let tank of this.tanks){
-          hit = this.canvas.collideRectRect(rndXPos[rndAxis],rndYPos[rndAxis],this.tankWidth,this.tankWidth,tank.x,tank.y,tank.width,tank.height);
-          if (hit === true){
-            break;
-          }
+          hit = this.canvas.collideRectRect(rndXPos[rndAxis],rndYPos[rndAxis],this.tankWidth,this.tankWidth,
+                                            tank.x,tank.y,tank.width,tank.height);
+          if(hit) break;
         }
 
-        if (hit === false){
-          this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth));
+        if(!hit){
+          for(let obstacle of obstacles){
+            hit = this.canvas.collideRectRect(rndXPos[rndAxis],rndYPos[rndAxis],this.tankWidth,this.tankWidth,
+                                              obstacle.x,obstacle.y,obstacle.width,obstacle.height);
+            if(hit) break;
+          }
+        }
+        
+        if(!hit){
+          this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth, this.id));
           break;
         }
       }
@@ -106,7 +120,7 @@ class Base{
     this.tanks.forEach(function(tank){
       if(tank.health <= 0){
         let deadTank = this.tanks.splice(this.tanks.indexOf(tank), 1);
-        console.log(deadTank);
+        this.deadTanks = [...this.deadTanks, deadTank[0]];
       }
 
       if (tank != undefined) {
