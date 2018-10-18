@@ -327,6 +327,11 @@ class Tank {
     return this.movementNetwork.predict(this.vision);
   }
 
+  // get weights for Movement Network
+  getWeights() {
+    return this.movementNetwork.getWeights();
+  }
+
   moveTurret() {
     let turretMovement = this.turretNetwork.predict(this.vision);
     if (turretMovement > 0.5) {

@@ -40,7 +40,7 @@ class NeuralNetworkTF {
     this.model.add(
       tf.layers.dense({
         units: this.no_of_outputs,
-        activation: "sigmoid"
+        activation: this.no_of_outputs > 1 ? "softmax" : "sigmoid"
       })
     );
 
@@ -60,5 +60,22 @@ class NeuralNetworkTF {
     const arr = Array.from(yhat.dataSync());
     yhat.dispose();
     return arr.indexOf(Math.max(...arr));
+  }
+
+  // Returns a collection of TypedArrays of weights of type float
+  getWeights() {
+    let weightsCollection = [];
+    let weights = this.model.getWeights();
+    for (let i = 0; i < weights.length; i++) {
+      weightsCollection.push(weights[i].dataSync());
+    }
+    return weightsCollection;
+  }
+
+  setWeights() {
+    // You can access a model's layer by using model.layers.
+    // You can set a layer's weights with layer.setWeights().
+    // Therefore you can use code like the following to set the weights of a single layer: model.layers[2].setWeights(...).
+    // You still can't set individual weights. But at least this helps you narrow down to a smaller set of weights.
   }
 }

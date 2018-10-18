@@ -23,6 +23,7 @@ let gameWindow = function(game) {
     canvas = game.createCanvas(canvasWidth, canvasHeight);
     canvas.class("box-shadow");
     canvas.mousePressed(mousePressedOnCanvas);
+    // game.frameRate(90);
     game.strokeWeight(2);
     game.stroke(84, 56, 71);
     game.angleMode(game.DEGREES);
@@ -228,6 +229,7 @@ function startGame(game, t) {
         let friendlyTanks = base.tanks.filter(t => t != tank);
         tank.train();
         let direction = tank.predictMovementDirection();
+        // console.log(tank.getWeights());
         tank.checkForCollisionAndMove(
           obstacles.concat(
             opponentBase,
