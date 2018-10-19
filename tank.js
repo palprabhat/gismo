@@ -29,8 +29,10 @@ class Tank {
     this.stop = [false, false, false, false]; // [stopLeft, stopRight, stopUp, stopDown]
     this.currentCollision = [null, null, null, null]; // [Left, Right, Up, Down]
 
-    this.movementNetwork = new NeuralNetworkTF([121, 7], 16, 2, 4, 0.1);
-    this.turretNetwork = new NeuralNetworkTF([121, 7], 6, 2, 1, 0.1);
+    // this.movementNetwork = new NeuralNetworkTF([121, 7], 16, 2, 4, 0.1);
+    // this.turretNetwork = new NeuralNetworkTF([121, 7], 6, 2, 1, 0.1);
+    this.movementNetwork = new _NeuralNetwork(121 * 7, 16, 4, 0.1);
+    this.turretNetwork = new _NeuralNetwork(121 * 7, 6, 1, 0.1);
   }
 
   // private functions
@@ -324,16 +326,32 @@ class Tank {
   }
 
   predictMovementDirection() {
-    return this.movementNetwork.predict(this.vision);
+    return this.movementNetwork.predict(this.vision.flat(2));
   }
 
-  // get weights for Movement Network
-  getWeights() {
-    return this.movementNetwork.getWeights();
+  mutate() {
+    function fn(x) {
+      if (random(1) < 0.05) {
+        let offset = randomGaussian() * 0.5;
+        let newx = x + offset;
+        return newx;
+      }
+      return x;
+    }
+
+    let ih = this.movementNetwork.input_weights.dataSync().map(fn);
+    let ih_shape = this.movementNetwork.input_weights.shape;
+    this.movementNetwork.input_weights.dispose();
+    this.movementNetwork.input_weights = tf.tensor(ih, ih_shape);
+
+    let ho = this.movementNetwork.output_weights.dataSync().map(fn);
+    let ho_shape = this.movementNetwork.output_weights.shape;
+    this.movementNetwork.output_weights.dispose();
+    this.movementNetwork.output_weights = tf.tensor(ho, ho_shape);
   }
 
   moveTurret() {
-    let turretMovement = this.turretNetwork.predict(this.vision);
+    let turretMovement = this.turretNetwork.predict(this.vision.flat(2));
     if (turretMovement > 0.5) {
       this.turretAngle -= 45;
     } else {

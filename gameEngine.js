@@ -229,7 +229,6 @@ function startGame(game, t) {
         let friendlyTanks = base.tanks.filter(t => t != tank);
         tank.train();
         let direction = tank.predictMovementDirection();
-        // console.log(tank.getWeights());
         tank.checkForCollisionAndMove(
           obstacles.concat(
             opponentBase,

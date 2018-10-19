@@ -50,32 +50,53 @@ class NeuralNetworkTF {
     });
   }
 
+  __getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    //The maximum is inclusive and the minimum is inclusive
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  // Returns a collection of TypedArrays of weights of type float
+  __getWeights() {
+    // return weights[layerIdx].dataSync();
+    return this.model.getWeights();
+  }
+
+  __setWeights() {
+    // You can access a model's layer by using model.layers.
+    // You can set a layer's weights with layer.setWeights().
+    // Therefore you can use code like the following to set the weights of a single layer: model.layers[2].setWeights(...).
+    // You still can't set individual weights. But at least this helps you narrow down to a smaller set of weights.
+  }
+
   showModel() {
     this.model.summary();
   }
 
   predict(X_train) {
-    // model.summary();
     const yhat = this.model.predict(tf.tensor(X_train));
     const arr = Array.from(yhat.dataSync());
     yhat.dispose();
     return arr.indexOf(Math.max(...arr));
   }
 
-  // Returns a collection of TypedArrays of weights of type float
-  getWeights() {
-    let weightsCollection = [];
-    let weights = this.model.getWeights();
-    for (let i = 0; i < weights.length; i++) {
-      weightsCollection.push(weights[i].dataSync());
-    }
-    return weightsCollection;
+  getCopy() {
+    return this.copy();
   }
 
-  setWeights() {
-    // You can access a model's layer by using model.layers.
-    // You can set a layer's weights with layer.setWeights().
-    // Therefore you can use code like the following to set the weights of a single layer: model.layers[2].setWeights(...).
-    // You still can't set individual weights. But at least this helps you narrow down to a smaller set of weights.
+  mutate() {
+    // let weightsCollection = this.model.getWeights();
+    // for (let i = 0; i < weightsCollection.length; i++) {
+    //   for (let j = 0; j < weightsCollection[i].dataSync().length; j++) {
+    //     if (this.__getRandomIntInclusive(0, 100) <= this.learning_rate * 100) {
+    //       let offset = Math.floor(Math.random() * 2) - 0.5;
+    //       console.log(weightsCollection.dataSync());
+    //       weightsCollection[i].dataSync()[j] += offset;
+    //     }
+    //   }
+    //   // console.log(weightsCollection[i].dataSync());
+    //   // this.model.layers[i].setWeights(weightsCollection[i]);
+    // }
   }
 }
