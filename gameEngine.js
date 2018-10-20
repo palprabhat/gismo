@@ -4,7 +4,7 @@ let canvasHeight = 720;
 let obstaclesCount = 20;
 let tankWidth = 20;
 
-let gameToPlay = 15;
+let gameToPlay = 2;
 let speed = 1;
 let generation = 1;
 
@@ -31,8 +31,8 @@ let gameWindow = function(game) {
   };
 
   game.draw = function() {
-    startGame(game,t);
     display();
+    startGame(game,t);
     checkGameResult();
 
     t++;
@@ -117,8 +117,10 @@ let gameWindow = function(game) {
       });
 
       if(gamePlayed === gameToPlay){
-        initialize(game, true);
+        evolve(deadTanks, bases, game);
+        deadTanks = [];
         generation++;
+        initialize(game, true);
       } else {
         initialize(game, false);
       }
@@ -132,7 +134,6 @@ function initialize(game, resetGame){
   let colorBlue = game.color(66, 80, 244);
   let colorMountain = game.color(183, 154, 97);
 
-  deadTanks = [];
   gameOver = false;
 
   // Obstacles
@@ -184,34 +185,33 @@ function initialize(game, resetGame){
 
 function startGame(game, t){
   // movement through nn
-  // for (var i = 0; i < speed; i++) {
-  //   bases.forEach(function(base) {
-  //     let indexBase = bases.indexOf(base); 
-  //     let opponentBase = (indexBase === 0) ? bases[1] : bases[0];
-  //     base.tanks.forEach(function(tank){
-  //       let friendlyTanks = base.tanks.filter(t => t !=  tank);
-  //       tank.train();
-  //       let direction = tank.predictMovementDirection();
-  //       tank.checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks, base, friendlyTanks), direction);
+  for (var i = 0; i < speed; i++) {
+    bases.forEach(function(base) {
+      let indexBase = bases.indexOf(base); 
+      let opponentBase = (indexBase === 0) ? bases[1] : bases[0];
+      base.tanks.forEach(function(tank){
+        let friendlyTanks = base.tanks.filter(t => t !=  tank);
+        tank.train();
+        let direction = tank.predictMovementDirection();
+        tank.checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks, base, friendlyTanks), direction);
 
-  //       if (t % 60 === 0) {
-  //         tank.moveTurret();
-  //       }
-  //     });
-  //   });
-  // }
+        if (t % 60 === 0) {
+          tank.moveTurret();
+        }
+      });
+    });
+  }
 
   // movement through keyboard
-  let opponentBase = bases[1];
   if (bases[0].tanks[0] != undefined)
   if (game.keyIsDown(game.LEFT_ARROW)) {
-    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks), 0);
+    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 0);
   } else if (game.keyIsDown(game.RIGHT_ARROW)) {
-    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks), 1);
+    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 1);
   } else if (game.keyIsDown(game.UP_ARROW)) {
-    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks), 2);
+    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 2);
   } else if (game.keyIsDown(game.DOWN_ARROW)) {
-    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks), 3);
+    bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 3);
   }
 }
 

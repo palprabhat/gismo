@@ -27,8 +27,13 @@ class Tank {
     this.stop = [false, false, false, false]; // [stopLeft, stopRight, stopUp, stopDown]
     this.currentCollision = [null, null, null, null]; // [Left, Right, Up, Down]
 
-    this.movementNetwork = new NeuralNetwork(2, 6, 2, 4, 0.1);
-    this.turretNetwork = new NeuralNetwork(2, 6, 2, 1, 0.1);
+    this.movementFitness = 0;
+    this.turretFitness = 0;
+    this.fireFitness = 0;
+
+    this.movementNetwork = new NeuralNetwork(847, 121, 2, 4, 0.1);
+    this.turretNetwork = new NeuralNetwork(847, 121, 2, 1, 0.1);
+    this.fireNetwork = new NeuralNetwork(847, 121, 2, 1, 0.1);
   }
 
   // private functions
@@ -221,10 +226,10 @@ class Tank {
       case 0:
         if (this.x > 1) {
           this.x -= 1;
-        }
+        } 
         break;
       case 1:
-        if (this.x + this.width < this.canvas.width) {
+        if (this.x + this.width < this.canvas.width - 1) {
           this.x += 1;
         }
         break;
@@ -234,7 +239,7 @@ class Tank {
         }
         break;
       case 3:
-        if (this.y + this.width < this.canvas.height) {
+        if (this.y + this.width < this.canvas.height - 1) {
           this.y += 1;
         }
         break;
@@ -254,20 +259,20 @@ class Tank {
 
   train() {
     this.movementNetwork.train(
-      [Math.random(), Math.random()],
+      this.vision.flat(2),
       [Math.random(), Math.random(), Math.random(), Math.random()]
     );
-    this.turretNetwork.train([Math.random(), Math.random()], [Math.random()]);
+    this.turretNetwork.train(this.vision.flat(2), [Math.random()]);
   }
 
   predictMovementDirection() {
     return this.movementNetwork.argMax(
-      this.movementNetwork.predict([this.x, this.y])
+      this.movementNetwork.predict(this.vision.flat(2))
     );
   }
 
   moveTurret() {
-    let turretMovement = this.turretNetwork.predict([this.x, this.y]);
+    let turretMovement = this.turretNetwork.predict(this.vision.flat(2));
 
     if (turretMovement > 0.5) {
       this.turretAngle -= 45;
@@ -299,7 +304,6 @@ class Tank {
 
   fire() { 
     if(this.bulletCount > 0){
-      console.log("fire in the hole");
       this.bullets.push(new Bullet(this.canvas, this.id, this.x + 10, this.y + 10, this.turretAngle));
       this.bulletCount--;
     }
