@@ -2,7 +2,7 @@
 
 ### TODO
 #### Sahil
-* Implement TF
+* Attach Fire module to neural network
 
 #### Palash
 * Test game
