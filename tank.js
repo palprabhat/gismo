@@ -285,10 +285,10 @@ class Tank {
       case 0:
         if (this.x > 1) {
           this.x -= 1;
-        }
+        } 
         break;
       case 1:
-        if (this.x + this.width < this.canvas.width) {
+        if (this.x + this.width < this.canvas.width - 1) {
           this.x += 1;
         }
         break;
@@ -298,7 +298,7 @@ class Tank {
         }
         break;
       case 3:
-        if (this.y + this.width < this.canvas.height) {
+        if (this.y + this.width < this.canvas.height - 1) {
           this.y += 1;
         }
         break;
@@ -393,18 +393,9 @@ class Tank {
     }
   }
 
-  fire() {
-    if (this.bulletCount > 0) {
-      console.log("fire in the hole");
-      this.bullets.push(
-        new Bullet(
-          this.canvas,
-          this.id,
-          this.x + 10,
-          this.y + 10,
-          this.turretAngle
-        )
-      );
+  fire() { 
+    if(this.bulletCount > 0){
+      this.bullets.push(new Bullet(this.canvas, this.id, this.x + 10, this.y + 10, this.turretAngle));
       this.bulletCount--;
     } else {
       console.log("out of ammo");
