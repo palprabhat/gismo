@@ -16,10 +16,7 @@ class _NeuralNetwork {
 
     // Initialize random weights
     this.input_weights = tf.randomNormal([this.input_nodes, this.hidden_nodes]);
-    this.output_weights = tf.randomNormal([
-      this.hidden_nodes,
-      this.output_nodes
-    ]);
+    this.output_weights = tf.randomNormal([this.hidden_nodes, this.output_nodes]);
   }
 
   /**
@@ -40,7 +37,11 @@ class _NeuralNetwork {
       output = output_layer.dataSync();
     });
     // return output;
-    return Array.from(output).indexOf(Math.max(...Array.from(output)));
+    if (this.output_nodes === 1) {
+      return Array.from(output)
+    } else {
+      return Array.from(output).indexOf(Math.max(...Array.from(output)));
+    }
   }
 
   /**
@@ -48,11 +49,7 @@ class _NeuralNetwork {
    * @returns {NeuralNetwork}
    */
   clone() {
-    let clonie = new NeuralNetwork(
-      this.input_nodes,
-      this.hidden_nodes,
-      this.output_nodes
-    );
+    let clonie = new _NeuralNetwork(this.input_nodes, this.hidden_nodes, this.output_nodes);
     clonie.dispose();
     clonie.input_weights = tf.clone(this.input_weights);
     clonie.output_weights = tf.clone(this.output_weights);

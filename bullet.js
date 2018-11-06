@@ -1,6 +1,6 @@
 class Bullet {
-	constructor(canvas, id, tankX, tankY, turretAngle){
-		this.speed = 10;
+	constructor(canvas, id, tankX, tankY, turretAngle, bulletRange){
+		this.speed = 15;
 		this.id = id;
 		this.canvas = canvas;
 		this.tankX = tankX;
@@ -11,7 +11,7 @@ class Bullet {
 		this.prevPos = this.pos.copy();
 		this.vel = p5.Vector.fromAngle(this.canvas.radians(this.turretAngle));
 		this.vel.mult(this.speed);
-		this.maxRange = 350;
+		this.maxRange = bulletRange;
 		this.distTravelled = 0;
 	}
 
@@ -31,7 +31,7 @@ class Bullet {
 
 	collide(obstacle){
 		let hit = false;
-		hit = this.canvas.collidePointRect(this.pos.x,this.pos.y,obstacle.x,obstacle.y,obstacle.width,obstacle.height);
+		hit = this.canvas.collidePointRect(this.pos.x, this.pos.y, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 			if(hit === true){
 				if (obstacle instanceof Tank) {
 					if(this.distTravelled <= (this.maxRange * 0.25))

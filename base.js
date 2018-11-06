@@ -1,8 +1,12 @@
 class Base{
-  constructor(canvas, obstacles, position, color, x, y){
+  constructor(canvas, obstacles, position, color, x, y, numTanks, movementNetworks, turretMovements){
     this.canvas = canvas;
     this.position = position;
     this.id = position;
+    this.numTanks = numTanks;
+
+    this.movementNetworks = movementNetworks;
+    this.turretMovements = turretMovements;
 
     if(x !== null && y !== null){
       this.x = x;
@@ -22,11 +26,11 @@ class Base{
     this.color = color;
     this.health = 100;
     this.tankWidth = 20;
-    const numTanks = 4;
+    this.currentIndex = 0;
     this.tanks = [];
     this.deadTanks = [];
 
-    for (let i=0; i<numTanks; i++) {
+    for (let i=0; i<this.numTanks; i++) {
       while (true){
         //top
         let rndXPos = [];
@@ -100,7 +104,9 @@ class Base{
         }
         
         if(!hit){
-          this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth, this.id));
+          this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth, this.id, 
+                                  this.movementNetworks.slice(this.currentIndex, this.currentIndex + 1), this.turretMovements.slice(this.currentIndex, this.currentIndex + 1)));
+          this.currentIndex += 1;
           break;
         }
       }

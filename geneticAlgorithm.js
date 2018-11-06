@@ -1,6 +1,11 @@
 function evolve(population, bases, canvas) {
-	calculateFitnesses(population, bases, canvas);
-	naturalSelection(population, bases);
+	let redPopulation = population.filter(p => p.id === 0);
+	let bluePopulation = population.filter(p => p.id === 1);
+
+	calculateFitnesses(redPopulation, bases, canvas);
+	calculateFitnesses(bluePopulation, bases, canvas);
+	naturalSelection(redPopulation, 0);
+	naturalSelection(bluePopulation), 1;
 }
 
 function calculateFitnesses(population, bases, canvas) {
@@ -8,7 +13,7 @@ function calculateFitnesses(population, bases, canvas) {
 	// console.log('population :', population);
 }
 
-function calculateFitnessMovement(population, bases, canvas){
+function calculateFitnessMovement(population, bases, canvas) {
 	for(let tank of population){
 		let distance = 0;
 		if(tank.id === 0){
@@ -22,24 +27,43 @@ function calculateFitnessMovement(population, bases, canvas){
 	}
 }
 
-function naturalSelection(population) {
+function naturalSelection(population, tankId) {
 	let bestMovement = population[0].movementFitness;
-	let bestMovementNetwork = population[0].movementNetwork.copy();
+	let bestMovementTank = population[0];
+
 	for (let i = 1; i < population.length; i++) {
 		if (bestMovement < population[i].movementFitness) {
 			bestMovement = population[i].movementFitness;
-			bestMovementNetwork = population[i].movementNetwork.copy();
+			bestMovementTank = population[i];
 		}
 	}
 
-	console.log('bestMovementNetwork :', bestMovementNetwork);
-	// for (let i = 0; i < Math.floor(population.length / 5); i++) {
-	// 	balls[i] = createBall();
-	// }
-	// for (let i = Math.floor(population.length / 5); i < population.length; i++) {
-	// 	balls[i] = createBall(bestBrain.copy());
-	// 	if (Math.random() < 0.8) {
-	// 		balls[i].brain.mutate();
-	// 	}
-	// }
+	if (tankId === 0){
+		for (let i = 0; i < Math.floor(population.length / 5); i++) {
+			nnMovementPoolRed[i] = new _NeuralNetwork(121 * 7, 16, 1, 0.1);
+			nnTurretPoolRed[i] = new _NeuralNetwork(121 * 7, 16, 3, 0.1);
+		}
+
+		for (let i = Math.floor(population.length / 5); i < population.length; i++) {
+			if (Math.random() < 0.8) {
+				bestMovementTank.mutate();
+			}
+			nnMovementPoolRed[i] = bestMovementTank.movementNetwork.clone();
+			nnTurretPoolRed[i] = bestMovementTank.turretNetwork.clone();
+		}
+	}
+	else {
+		for (let i = 0; i < Math.floor(population.length / 5); i++) {
+			nnMovementPoolBlue[i] = new _NeuralNetwork(121 * 7, 16, 1, 0.1);
+			nnTurretPoolBlue[i] = new _NeuralNetwork(121 * 7, 16, 3, 0.1);
+		}
+
+		for (let i = Math.floor(population.length / 5); i < population.length; i++) {
+			if (Math.random() < 0.8) {
+				bestMovementTank.mutate();
+			}
+			nnMovementPoolBlue[i] = bestMovementTank.movementNetwork.clone();
+			nnTurretPoolBlue[i] = bestMovementTank.turretNetwork.clone();
+		}
+	}
 }
