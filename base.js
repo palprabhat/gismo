@@ -1,5 +1,5 @@
 class Base{
-  constructor(canvas, obstacles, position, color, x, y, numTanks, movementNetworks, turretMovements){
+  constructor(canvas, obstacles, position, color, x, y, numTanks, movementNetworks, turretMovements, dnaPool){
     this.canvas = canvas;
     this.position = position;
     this.id = position;
@@ -7,6 +7,7 @@ class Base{
 
     this.movementNetworks = movementNetworks;
     this.turretMovements = turretMovements;
+    this.dnaPool = dnaPool;
 
     if(x !== null && y !== null){
       this.x = x;
@@ -105,7 +106,9 @@ class Base{
         
         if(!hit){
           this.tanks.push(new Tank(canvas, rndXPos[rndAxis], rndYPos[rndAxis], this.tankWidth, this.id, 
-                                  this.movementNetworks.slice(this.currentIndex, this.currentIndex + 1), this.turretMovements.slice(this.currentIndex, this.currentIndex + 1)));
+                                  this.movementNetworks.slice(this.currentIndex, this.currentIndex + 1), 
+                                  this.turretMovements.slice(this.currentIndex, this.currentIndex + 1), 
+                                  this.dnaPool.slice(this.currentIndex, this.currentIndex + 1)));
           this.currentIndex += 1;
           break;
         }

@@ -1,6 +1,6 @@
 class Bullet {
 	constructor(canvas, id, tankX, tankY, turretAngle, bulletRange){
-		this.speed = 15;
+		this.speed = 10;
 		this.id = id;
 		this.canvas = canvas;
 		this.tankX = tankX;

@@ -1,21 +1,23 @@
 let canvasWidth = 965;
 let canvasHeight = 720;
 
-let obstaclesCount = 20;
+let obstaclesCount = 6;
 let tankWidth = 20;
 
-let population = 20;
-let gameToPlay = 4;
+let population = 100;
+let gameToPlay = 25;
 let speed = 1;
 let generation = 1;
 let currentIndex  = 0;
-let lifeSpan = 100;
+let lifeSpan = 500;
 
 let obstacles = [];
 let bases = [];
 let deadTanks = [];
 let gameOver = false;
 let frameCount = 0;
+let showFOV = false;
+let gamePlayed = 0;
 
 let numTanks = population/gameToPlay;
 
@@ -23,44 +25,31 @@ let nnMovementPoolRed = [];
 let nnMovementPoolBlue = [];
 let nnTurretPoolRed = [];
 let nnTurretPoolBlue = [];
+let dnaPool = [];
 
 let gameWindow = function(game) {
-  let gamePlayed = 0;
-
   game.preload = function() {};
 
   game.setup = function() {
     canvas = game.createCanvas(canvasWidth, canvasHeight);
     canvas.class("box-shadow");
-    canvas.mousePressed(mousePressedOnCanvas);
     
     game.strokeWeight(2);
     game.stroke(84, 56, 71);
     game.angleMode(game.DEGREES);
 
     for (let i = 0; i < population/2; i++) {
-      nnMovementPoolRed = [...nnMovementPoolRed, new _NeuralNetwork(121 * 7, 16, 1, 0.1)];
-      nnTurretPoolRed = [...nnTurretPoolRed, new _NeuralNetwork(121 * 7, 16, 3, 0.1)];
-      nnMovementPoolBlue = [...nnMovementPoolBlue, new _NeuralNetwork(121 * 7, 16, 1, 0.1)];
-      nnTurretPoolBlue = [...nnTurretPoolBlue, new _NeuralNetwork(121 * 7, 16, 3, 0.1)];
+      dnaPool = [...dnaPool, new DNA(game)];
     }
 
     initialize(game, true);
   };
 
-  setInterval(function(){
+  game.draw = function() {
     for (var i = 0; i < speed; i++) {
       display();
       playGame(game);
     }
-  }, 1000/60);
-
-  game.draw = function() {
-    // console.log(frameCount);
-    // for (var i = 0; i < speed; i++) {
-      // display();
-      // playGame(game);
-    // }
 
     if (game.keyIsDown(65)) {
       bases[0].tanks[0].turretAngle -= 1;
@@ -69,6 +58,10 @@ let gameWindow = function(game) {
     if (game.keyIsDown(68)) {
       bases[0].tanks[0].turretAngle += 1;
     }
+
+    document.getElementById("generation").innerHTML = generation;
+    document.getElementById("populationLeft").innerHTML = (population - deadTanks.length/2).toString() + "/" + population.toString();
+    document.getElementById("gameCycle").innerHTML = (gamePlayed+1).toString() + "/" + gameToPlay.toString();
   };
 
   display = function() {
@@ -77,9 +70,8 @@ let gameWindow = function(game) {
       obstacle.display();
     });
 
-    let obstaclesToCheck = [];
-
     bases.forEach(function(base) {
+      let obstaclesToCheck = [];
       obstaclesToCheck = obstaclesToCheck.concat(base);
       let indexBase = bases.indexOf(base);
       let opponentBase = indexBase === 0 ? bases[1] : bases[0];
@@ -108,8 +100,8 @@ let gameWindow = function(game) {
             }
           }
         });
-      });
 
+      });
       base.display(obstacles.concat(obstaclesToCheck));
     });
   };
@@ -151,7 +143,8 @@ let gameWindow = function(game) {
             : [...deadTanks, ...base.deadTanks, ...base.tanks];
       });
 
-      if(gamePlayed % gameToPlay === 0){
+      if(gamePlayed === gameToPlay){
+        gamePlayed = 0;
         evolve(deadTanks, bases, game);
         deadTanks = [];
         generation++;
@@ -214,9 +207,13 @@ function initialize(game, resetGame) {
     bases = [
       ...bases,
       new Base(game, obstacles, 0, colorRed, null, null, numTanks, 
-              nnMovementPoolRed.slice(currentIndex, currentIndex + numTanks), nnTurretPoolRed.slice(currentIndex, currentIndex + numTanks)),
+              nnMovementPoolRed.slice(currentIndex, currentIndex + numTanks), 
+              nnTurretPoolRed.slice(currentIndex, currentIndex + numTanks),
+              dnaPool.slice(currentIndex, currentIndex + numTanks)),
       new Base(game, obstacles, 1, colorBlue, null, null, numTanks,
-              nnMovementPoolBlue.slice(currentIndex, currentIndex + numTanks), nnTurretPoolBlue.slice(currentIndex, currentIndex + numTanks))
+              nnMovementPoolBlue.slice(currentIndex, currentIndex + numTanks), 
+              nnTurretPoolBlue.slice(currentIndex, currentIndex + numTanks),
+              dnaPool.slice(currentIndex, currentIndex + numTanks))
     ];
     currentIndex += numTanks;
   } else {
@@ -228,9 +225,13 @@ function initialize(game, resetGame) {
     bases = [
       ...bases,
       new Base(game, obstacles, 0, colorRed, x0, y0, numTanks,
-              nnMovementPoolRed.slice(currentIndex, currentIndex + numTanks), nnTurretPoolRed.slice(currentIndex, currentIndex + numTanks)),
+              nnMovementPoolRed.slice(currentIndex, currentIndex + numTanks), 
+              nnTurretPoolRed.slice(currentIndex, currentIndex + numTanks),
+              dnaPool.slice(currentIndex, currentIndex + numTanks)),
       new Base(game, obstacles, 1, colorBlue, x1, y1, numTanks,
-              nnMovementPoolBlue.slice(currentIndex, currentIndex + numTanks), nnTurretPoolBlue.slice(currentIndex, currentIndex + numTanks))
+              nnMovementPoolBlue.slice(currentIndex, currentIndex + numTanks), 
+              nnTurretPoolBlue.slice(currentIndex, currentIndex + numTanks),
+              dnaPool.slice(currentIndex, currentIndex + numTanks))
     ];
     currentIndex += numTanks;
   }
@@ -244,32 +245,18 @@ function playGame(game) {
     let opponentBase = (indexBase === 0) ? bases[1] : bases[0];
     base.tanks.forEach(function(tank){
       let friendlyTanks = base.tanks.filter(t => t !=  tank);
-      let move = tank.predictMovement();
-      if(move >= 0.5){
-        tank.checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks, base, friendlyTanks));
-      }
-      tank.moveTurret();
+      tank.checkForCollisionAndMove(obstacles.concat(opponentBase, opponentBase.tanks, base, friendlyTanks)); //base, friendlyTanks
+
     });
   });
 
   checkGameResult();
-
-  // movement through keyboard
-  // if (bases[0].tanks[0] != undefined)
-  // if (game.keyIsDown(game.LEFT_ARROW)) {
-  //   bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 0);
-  // } else if (game.keyIsDown(game.RIGHT_ARROW)) {
-  //   bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 1);
-  // } else if (game.keyIsDown(game.UP_ARROW)) {
-  //   bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 2);
-  // } else if (game.keyIsDown(game.DOWN_ARROW)) {
-  //   bases[0].tanks[0].checkForCollisionAndMove(obstacles.concat(bases[1], bases[1].tanks, bases[0], bases[0].tanks.filter(t=>t!=bases[0].tanks[0])), 3);
-  // }
-  // checkGameResult();
 }
 
 function restart() {
   console.clear();
+  gamePlayed = 0;
+  deadTanks = [];
   initialize(cnv, true);
   cnv.loop();
 }
@@ -282,19 +269,11 @@ function resume() {
   cnv.loop();
 }
 
-function mousePressedOnCanvas() {
-  // bases.forEach(function(base) {
-  //   base.tanks.forEach(function(tank){
-  //     tank.fire();
-  //   });
-  // });
-  bases[0].tanks[0].fire();
-}
-
 function toggleFOV() {
+  showFOV = !showFOV;
   bases.forEach(function(base) {
     base.tanks.forEach(function(tank) {
-      tank.showFOV = tank.showFOV ? false : true;
+      tank.showFOV = showFOV;
     });
   });
 }
