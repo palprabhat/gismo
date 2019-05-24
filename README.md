@@ -3,6 +3,9 @@
 GISMO is a Game for Intelligent Simulated Military Opponents which simulates a battlefield in which two rival forces compete to win. This is much like a real-world military battle scenario, which has been conceived in the form of a game to make it an interesting problem to solve. The goal of this project is to play the game using an architecture which uses Neural Networks along with the traditional Genetic Algorithm.
 
 ## The Game
+
+![game](https://github.com/sahiljohari/gismo/blob/master/gismo.jpg)
+
 The game is a simple battlefield simulation. In any conflict, each competitor will have a Base, and will control four tanks. Battlefield will have plain terrain to facilitate tank movement and mountains as obstacles. Each entity in the game (except obstacles) will have a health associated with them. Each competitor will have details on the location of their base and position of the tanks. **The objective of the game is to locate and destroy the enemy base.**
 
 There are two ways to end the game:
