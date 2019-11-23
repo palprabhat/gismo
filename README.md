@@ -60,5 +60,5 @@ As the game progressed, it was clear that the tanks were learning to play intell
 
 ## Contributors
 - Sahil Johari
-- Prabhat Pal
-- Palash Khandekar
+- [Prabhat Pal](https://github.com/palprabhat)
+- [Palash Khandekar](https://github.com/palashck)
