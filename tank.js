@@ -1,5 +1,5 @@
 class Tank {
-  constructor(canvas, x, y, width, id, movementNetwork, turretNetwork) {
+  constructor(canvas, x, y, width, id, movementNetwork, turretNetwork, dnaPool, obstaclesLength) {
     this.x = x;
     this.y = y;
     
@@ -21,63 +21,94 @@ class Tank {
     this.causeOfDeath;
 
     let rndNumber = Math.floor(Math.random() * Math.floor(8));
-    this.turretAngle = rndNumber * 45;
+
+    if(this.id === 0){
+      this.turretAngle = __getRandomIntInclusive(30, 150);
+    }
+    else {
+      this.turretAngle = __getRandomIntInclusive(210, 330);
+    }
     this.viewAngle = 60;
     this.fovRange = this.diagonal;
     this.showFOV = false;
     this.vision = [];
     this.collided = false;
-    this.speed = 1;
+    this.speed = 2;
+    this.vision1 = new Array(13);
 
-    this.pos = this.canvas.createVector(x + Math.cos(Math.PI*(this.turretAngle/180)), 
-																				y + Math.sin(Math.PI*(this.turretAngle/180)));
+    this.dna = dnaPool[0];
+    this.geneCounter = 0;
+    
+    this.acc = this.canvas.createVector();
+    this.vel = this.canvas.createVector();
+
+    this.pos = this.canvas.createVector(this.x, this.y);
 
     this.lastObstacle;
     this.stop = [false, false, false, false]; // [stopLeft, stopRight, stopUp, stopDown]
     this.currentCollision = [null, null, null, null]; // [Left, Right, Up, Down]
-
-    this.movementNetwork = movementNetwork[0];
-    this.turretNetwork = turretNetwork[0];
+    this.movementFitness = 0;
   }
 
-  // private functions
   __rotateTurret(turretAngle) {
     this.canvas.push();
     this.canvas.translate(this.width / 2, this.width / 2);
     this.canvas.rotate(turretAngle - 45);
     this.canvas.strokeWeight(4);
-    // this.canvas.rotate(45);
     this.canvas.line(0, 0, 15, 15);
     this.canvas.pop();
   }
 
   __drawFOV(turretAngle, obstacles) {
     this.canvas.push();
-    // this.canvas.rotate(-this.turretAngle);
-    // this.canvas.translate(this.width, this.width);
     this.canvas.strokeWeight(1);
     this.canvas.stroke(0, 0, 0, 50);
 
     let x1 = this.width / 2;
     let y1 = this.width / 2;
     this.vision = [];
+    this.vision1.fill(0);
     let oneHotVision = [];
 
-    for (let theta = turretAngle - this.viewAngle / 2; theta <= turretAngle + this.viewAngle / 2; theta += 0.5) {
-      
+    let obstaclesMountains = obstacles.filter(m => m instanceof Mountain);
+
+    for (let i = 0; i < obstaclesMountains.length; i++){
+      let d = this.canvas.dist(this.x + x1, this.y + y1, obstaclesMountains[i].x + (obstaclesMountains[i].width/2), obstaclesMountains[i].y + (obstaclesMountains[i].width/2));
+      this.vision1[i] = d/this.diagonal;
+    }
+
+    let obstaclesTanks = obstacles.filter(t => t instanceof Tank && t != this);
+    for (let i = obstaclesMountains.length; i < obstaclesMountains.length + obstaclesTanks.length; i++){
+      let k = i - obstaclesMountains.length;
+      let d = this.canvas.dist(this.x + x1, this.y + y1, obstaclesTanks[k].x + x1, obstaclesTanks[k].y + y1);
+      this.vision1[i] = d/this.diagonal;
+    }
+
+    let obstaclesBases = obstacles.filter(b => b instanceof Base);
+    let thershold = obstaclesMountains.length + obstaclesTanks.length;
+    for (let i = thershold; i < thershold + obstaclesBases.length; i++){
+      let k = i - thershold;
+      let d = this.canvas.dist(this.x + x1, this.y + y1, obstaclesBases[k].x + (obstaclesBases[k].width/2), obstaclesBases[k].y + (obstaclesBases[k].width/2));
+      this.vision1[i] = d/this.diagonal;
+    }
+
+
+    for (let theta = turretAngle - this.viewAngle / 2; theta <= turretAngle + this.viewAngle / 2; theta += 1) {
       let x2 = x1 + this.fovRange * Math.cos((Math.PI * theta) / 180.0);
       let y2 = y1 + this.fovRange * Math.sin((Math.PI * theta) / 180.0);
 
       let x2List = [];
       let y2List = [];
       let obs = [];
-      let obst = [1, 0, 0, 0, 0, 0, 0]; //[D, FT, OT, FB, OB, M, B]
+      let obst = [1, 0, 0, 0, 0, 0, 0]; //[Dist, FT, OT, FB, OB, Mountain, Bullet]
 
       let maxDistance = Infinity;
       let maxDistanceCopy = maxDistance;
 
       let hit;
-      let obstaclesToCheck = obstacles.filter(t => t != this);
+      let obstaclesToChk = obstacles.filter(t => t != this);
+      let obstaclesToCheck = obstaclesToChk.filter(m => !(m instanceof Mountain));
+
       for (let obstacle of obstaclesToCheck) {
         if (obstacle instanceof Bullet) {
           hit = this.canvas.collidePointLine(obstacle.pos.x, obstacle.pos.y, this.x + x1, this.y + y1, this.x + x2, this.y + y2);
@@ -175,14 +206,13 @@ class Tank {
     this.canvas.pop();
   }
 
-  // public functions
+
   display(color, obstacles) {
+    this.turretAngle = this.getAngle();
     this.x = this.pos.x;
     this.y = this.pos.y;
     this.canvas.push();
     this.canvas.translate(this.x, this.y);
-    // this.canvas.rectMode(this.canvas.CENTER)
-    // this.canvas.rotate(this.turretAngle);
     this.__drawFOV(this.turretAngle, obstacles);
     this.__rotateTurret(this.turretAngle);
     this.canvas.fill(color);
@@ -190,65 +220,7 @@ class Tank {
     this.canvas.pop();
   }
 
-  predictMovement() {
-    return this.movementNetwork.predict(this.vision.flat(2));
-  }
-
-  mutate() {
-    function fn(x) {
-      if (Math.random() < 0.05) {
-        let offset = Math.floor(Math.random() * 2) - 0.5;
-        let newx = x + offset;
-        return newx;
-      }
-      return x;
-    }
-
-    let ih = this.movementNetwork.input_weights.dataSync().map(fn);
-    let ih_shape = this.movementNetwork.input_weights.shape;
-    this.movementNetwork.input_weights.dispose();
-    this.movementNetwork.input_weights = tf.tensor(ih, ih_shape);
-
-    let ho = this.movementNetwork.output_weights.dataSync().map(fn);
-    let ho_shape = this.movementNetwork.output_weights.shape;
-    this.movementNetwork.output_weights.dispose();
-    this.movementNetwork.output_weights = tf.tensor(ho, ho_shape);
-
-    ih = this.turretNetwork.input_weights.dataSync().map(fn);
-    ih_shape = this.turretNetwork.input_weights.shape;
-    this.turretNetwork.input_weights.dispose();
-    this.turretNetwork.input_weights = tf.tensor(ih, ih_shape);
-
-    ho = this.turretNetwork.output_weights.dataSync().map(fn);
-    ho_shape = this.turretNetwork.output_weights.shape;
-    this.turretNetwork.output_weights.dispose();
-    this.turretNetwork.output_weights = tf.tensor(ho, ho_shape);
-  }
-
-  moveTurret() {
-    let turretMovement = this.turretNetwork.predict(this.vision.flat(2));
-    if (turretMovement === 1) {
-      this.turretAngle -= 1;
-    } else if (turretMovement === 2) {
-      this.turretAngle += 1;
-    }
-  }
-
   checkForCollisionAndMove(obstacles) {
-    this.prevPos = this.pos.copy();
-    this.vel = p5.Vector.fromAngle(this.canvas.radians(this.turretAngle));
-    this.vel.mult(this.speed);
-    this.pos.add(this.vel);
-
-    if (this.collided){
-      this.x = this.pos.x;
-      this.y = this.pos.y;
-    }
-    else {
-      this.x = this.pos.x;
-      this.y = this.pos.y;
-    }
-
     let hit = false;
     for (let obstacle of obstacles){
       hit = this.canvas.collideRectRect(this.x, this.y, this.width, this.width, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
@@ -256,7 +228,7 @@ class Tank {
       if(hit){
         if (this.decreaseHealth) {
           if (obstacle instanceof Mountain) {
-            this.health -= 20;
+            this.health = 0;
           } else if (obstacle instanceof Tank) {
             this.health -= 5;
             obstacle.health -= 5;
@@ -286,17 +258,16 @@ class Tank {
       }
     }
 
-    if (hit){
+    if (hit) {
       this.vel = p5.Vector.fromAngle(this.canvas.radians(180+this.turretAngle));
-      this.vel.mult(this.speed);
       this.pos.add(this.vel);
-      this.collided=true; 
     }
     else{
-      this.vel = p5.Vector.fromAngle(this.canvas.radians(this.turretAngle));
-      this.vel.mult(this.speed);
+      this.acc.add(this.dna.genes[this.geneCounter]);
+      this.vel.add(this.acc);
       this.pos.add(this.vel);
-      this.collided=false;
+      this.acc.mult(0);
+      this.geneCounter = (this.geneCounter + 1) % this.dna.genes.length;
     }
   }
 
@@ -307,5 +278,16 @@ class Tank {
     } else if (this.bulletCount <= 0) {
       console.log("Out of ammo !!");
     }
+  }
+
+  getAngle(){
+    let angle = Math.atan2(this.vel.y, this.vel.x);
+    return angle * 45;
+  }
+
+  __getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
   }
 }
